@@ -1,6 +1,5 @@
 package com.hetun.datacenter.template;
 
-import com.hetun.datacenter.bean.LocalLiveBean;
 import com.hetun.datacenter.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,13 +15,12 @@ public class Index {
         this.indexService = indexService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("bofang/{id}")
     public String index(@PathVariable("id") Integer id, Model model){
-        LocalLiveBean liveById = indexService.findLiveById(id);
-        if (liveById == null) {
+        String liveLink = indexService.findLiveById(id);
+        if (liveLink == null) {
             return "player";
         }
-        String liveLink = liveById.getLiveLink();
         model.addAttribute("playurl",liveLink);
         return "player";
     }

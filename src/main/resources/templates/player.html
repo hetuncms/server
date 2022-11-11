@@ -1,33 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-</head>
-<body>
 
-<video style="width: 100%;height: 500px"
+  <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
+  <!-- <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script> -->
+</head>
+
+<body>
+<video
         id="my-video"
-        class="video-js"
         controls
         preload="auto"
-        width="640"
-        height="264"
-        poster="MY_VIDEO_POSTER.jpg"
+        style="width:100%; height: 100%; object-fit: fill"
+        class="video-js vjs-default-skin vjs-big-play-centered"
         data-setup="{}"
 >
-  <source th:src="${playurl}" type="video/mp4" />
   <p class="vjs-no-js">
     To view this video please enable JavaScript, and consider upgrading to a
     web browser that
-    <a href="https://videojs.com/html5-video-support/" target="_blank"
-    >supports HTML5 video</a
-    >
+    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
   </p>
 </video>
 
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script src="http://vjs.zencdn.net/7.3.0/video.min.js"></script>
 
+<script th:inline="javascript">
+  videojs('my-video', {
+    controls: true,
+    autoplay: true,
+    preload: 'auto',
+    sources:[{
+      type: 'application/x-mpegURL',
+      src: '[(${playurl})]'
+    }
+    ]
+  });
+</script>
 </body>
-</html>

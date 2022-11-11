@@ -38,6 +38,11 @@ public class IndexController {
         return indexService.getIndex(header, requstbody);
     }
 
+    @PostMapping("getVideoUrl")
+    public String getVideoUrl(String id){
+        return indexService.getVideoUrl(id);
+    }
+
     @CrossOrigin
     @PostMapping("get_local_stream")
     public BaseBean<List<LocalLiveBean>> getLocalStream() {
@@ -56,5 +61,12 @@ public class IndexController {
     @PostMapping("/delete_stream")
     public BaseBean<Integer> deleteLiveStream(@RequestBody LocalLiveBean localLiveBean) {
         return indexService.deleteLiveStream(localLiveBean);
+    }
+
+
+    @CrossOrigin
+    @PostMapping("/get_iframe_link_byid")
+    public String getIframeLinkById(@RequestParam("id")String id) {
+        return indexService.getIframeLinkById(id);
     }
 }

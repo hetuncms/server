@@ -9,6 +9,8 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
 repositories {
+	maven { url 'https://maven.aliyun.com/repository/public/' }
+	maven { url 'https://maven.aliyun.com/repository/spring/' }
 	mavenCentral()
 }
 
@@ -20,6 +22,7 @@ dependencies {
 	implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
 
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.seleniumhq.selenium:selenium-java:4.5.3'
 	implementation 'com.auth0:java-jwt:4.2.0'
 	implementation 'org.xerial:sqlite-jdbc'
 	implementation 'p6spy:p6spy:3.9.1'
@@ -28,4 +31,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+
+bootJar{
+	baseName="server"
+	version("")
 }
