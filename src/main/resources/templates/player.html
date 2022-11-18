@@ -1,38 +1,30 @@
 <head>
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-
-  <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
-  <!-- <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/dplayer@1.27.0/dist/DPlayer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.2.7/dist/hls.min.js"></script>
 </head>
 
-<body>
-<video
-        id="my-video"
-        controls
-        preload="auto"
-        style="width:100%; height: 100%; object-fit: fill"
-        class="video-js vjs-default-skin vjs-big-play-centered"
-        data-setup="{}"
->
-  <p class="vjs-no-js">
-    To view this video please enable JavaScript, and consider upgrading to a
-    web browser that
-    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-  </p>
-</video>
+<body class="dplayer-web-fullscreen-fix">
 
-<script src="http://vjs.zencdn.net/7.3.0/video.min.js"></script>
+<div id="dplayer" class="dplayer-fulled"></div>
 
 <script th:inline="javascript">
-  videojs('my-video', {
-    controls: true,
-    autoplay: true,
-    preload: 'auto',
-    sources:[{
-      type: 'application/x-mpegURL',
-      src: '[(${playurl})]'
-    }
-    ]
+
+  let request = new XMLHttpRequest();
+  request.responseType = 'blob';
+  request.open('get', '[(${playurl})]', true);
+  //request.setRequestHeader('Host', `global.zkshuye.cn`);
+  const dp = new DPlayer({
+    container: document.getElementById('dplayer'),
+    live: true,
+    video: {
+      url: '[(${playurl})]',
+      type: 'hls',
+    },
+    pluginOptions: {
+      hls: {
+        // hls config
+      },
+    },
   });
 </script>
 </body>

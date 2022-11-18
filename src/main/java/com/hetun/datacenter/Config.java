@@ -11,6 +11,17 @@ public class Config {
     @Value("${chrome_driver_path}")
     private String chromeDriverPath;
 
+    @Value("${spring.web.resources.static-locations}")
+    private String staticPath;
+
+    public String getStaticPath() {
+        return staticPath;
+    }
+
+    public void setStaticPath(String staticPath) {
+        this.staticPath = staticPath;
+    }
+
     public String getChromeDriverPath() {
         return chromeDriverPath;
     }

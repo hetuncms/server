@@ -95,7 +95,7 @@ public class LiveItem {
         @JSONField(name = BeanUtil.PREFIX_GETTER_IS)
         private String playid;
         @JSONField(name = "co")
-        private Integer gameType;
+        private Integer liveType;
         @JSONField(name = "h")
         private String iframeLink;
         private String h;
@@ -190,12 +190,12 @@ public class LiveItem {
             this.playid = playid;
         }
 
-        public Integer getGameType() {
-            return this.gameType;
+        public Integer getLiveType() {
+            return this.liveType;
         }
 
-        public void setGameType(Integer gameType) {
-            this.gameType = gameType;
+        public void setLiveType(Integer liveType) {
+            this.liveType = liveType;
         }
 
         public String getH() {

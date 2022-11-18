@@ -6,58 +6,59 @@ import com.hetun.datacenter.bean.BaseBean;
 import com.hetun.datacenter.bean.LiveItem;
 import com.hetun.datacenter.bean.LocalLiveBean;
 import com.hetun.datacenter.mapper.LocalLiveMapper;
-import com.hetun.datacenter.tools.ServerConfig;
+import com.hetun.datacenter.net.NetInterface;
+import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.tools.chrome.M3u8Sniff;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.Okio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class IndexService {
-    ServerConfig serverConfig;
 
     private static final MediaType JSON = MediaType.parse("application/x-www-form-urlencoded;");
     OkHttpClient okHttpClient = new OkHttpClient();
     LocalLiveMapper localLiveMapper;
     Config config;
+    NetService netService;
+    private NetInterface netInterface;
 
     @Autowired
-    public IndexService(LocalLiveMapper localLiveMapper, ServerConfig serverConfig, Config config) {
+    public IndexService(LocalLiveMapper localLiveMapper, Config config, NetService netService) {
         this.localLiveMapper = localLiveMapper;
-        this.serverConfig = serverConfig;
         this.config = config;
-
+        this.netService = netService;
         System.setProperty("webdriver.chrome.driver", config.getChromeDriverPath());
 
+        netInterface = netService.getRetrofit().create(NetInterface.class);
     }
 
     @org.springframework.web.bind.annotation.ResponseBody
     public LiveItem requestData(Map<String, String> header, String requstbody) {
-        okhttp3.RequestBody body = okhttp3.RequestBody.create(JSON, requstbody);
-        Headers headers = Headers.of(header);
-        System.out.println(requstbody);
-        Request build = new Request.Builder().url("http://www.515.tv").headers(headers).post(body).build();
+        LiveItem liveset;
 
-        Response execute;
-        String netData;
         try {
-            execute = okHttpClient.newCall(build).execute();
-            netData = execute.body().string();
+            liveset = netInterface.index(requstbody).execute().body();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        LiveItem liveset = com.alibaba.fastjson2.JSON.parseObject(netData, LiveItem.class);
-        if (liveset == null) {
-            return null;
-        }
         List<LiveItem.Item> live_item = liveset.getLive_item();
         if (live_item == null || liveset.getInfo() != null) {
             if (liveset.getInfo() == null || liveset.getInfo().isEmpty()) {
@@ -68,8 +69,7 @@ public class IndexService {
         }
 
         live_item.forEach(item -> {
-            item.setIframeLink("http://www.515.tv/live/" + item.getPlayid() + "?rel=0&amp&autoplay=1");
-            LiveItem.RelationT relationT = liveset.getT().get(item.getId());
+//            LiveItem.RelationT relationT = liveset.getT().get(item.getId());
 
 //            if (relationT != null) {
 //                item.setMatchId(relationT.getI());
@@ -101,7 +101,7 @@ public class IndexService {
     }
 
     private String toIframe(Integer id) {
-        String iframeAddress = serverConfig.getUrl() + "/" + id;
+        String iframeAddress = config.getLocalAddress() + "live_cms/" + id;
         return iframeAddress;
     }
 
@@ -136,21 +136,32 @@ public class IndexService {
     public LiveItem getIndex(Map<String, String> header, String requstbody) {
         LiveItem liveItem = requestData(header, requstbody);
         Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
-        Integer gameType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2,requstbody.indexOf("&g=")));
+        Integer gameType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
 
         if (liveItem != null && liveItem.getLive_item() != null) {
-            liveItem.getLive_item().forEach(item -> item.setIframeLink(config.getLocalAddress() + item.getId()));
+            liveItem.getLive_item().forEach(item -> {
+                item.setIframeLink("");
+
+                String leftimg = downloadTeamImg(item.getLeftImg());
+                String rightImg = downloadTeamImg(item.getRightImg());
+                item.setLeftImg(leftimg);
+                item.setRightImg(rightImg);
+            });
+
+
         }
 
         List<LocalLiveBean> localLiveBeans = localLiveMapper.selectList(new QueryWrapper<>());
-        if (localLiveBeans != null && pager == 1 && liveItem != null && liveItem.getLive_item() != null) {
-            localLiveBeans.stream().filter(localLiveBean -> localLiveBean.getGameType()!=null)
-            .filter(localLiveBean -> localLiveBean.getGameType().equals(gameType))
+
+        if (localLiveBeans != null && pager == 1 && liveItem != null) {
+            localLiveBeans.stream().filter(localLiveBean -> localLiveBean.getLiveType() != null)
+                    .filter(localLiveBean -> localLiveBean.getLiveType().equals(gameType))
                     .forEach(localLiveBean -> {
                         LiveItem.Item item = new LiveItem.Item();
-                        item.setGameType(localLiveBean.getGameType());
+                        item.setLiveType(localLiveBean.getLiveType());
                         item.setGameName(localLiveBean.getGameName());
                         item.setLeftImg(localLiveBean.getLeftImg());
+                        item.setPlayid(localLiveBean.getId().toString());
                         item.setLeftName(localLiveBean.getLeftName());
                         item.setRightImg(localLiveBean.getRightImg());
                         item.setRightName(localLiveBean.getRightName());
@@ -163,7 +174,13 @@ public class IndexService {
                         item.setIsTop(localLiveBean.getIsTop());
                         item.setTitle(localLiveBean.getGameName());
                         item.setIframeLink(toIframe(localLiveBean.getId()));
-                        liveItem.getLive_item().add(item);
+                        if (liveItem.getLive_item() == null) {
+                            ArrayList<LiveItem.Item> items = new ArrayList<>();
+                            items.add(item);
+                            liveItem.setLive_item(items);
+                        } else {
+                            liveItem.getLive_item().add(item);
+                        }
 
                         // 筛选置顶
                         List<LiveItem.Item> top = liveItem.getLive_item().stream().
@@ -173,10 +190,50 @@ public class IndexService {
                         top.addAll(noral);
                         liveItem.setLive_item(top);
                     });
+
         }
-
-
         return liveItem;
+    }
+
+    @Autowired
+    ResourceLoader resourceLoader;
+
+    private static String TEAM_IMG_NAME = "team_img";
+
+    private String downloadTeamImg(String img) {
+        try {
+            String fileName = img.substring(img.lastIndexOf("/") + 1);
+            File staticDir = null;
+
+            try {
+                staticDir = new File(getClass().getResource("/static/"+TEAM_IMG_NAME).toURI());
+            } catch (NullPointerException e) {
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (staticDir == null) {
+                staticDir = new File(config.getStaticPath()+TEAM_IMG_NAME);
+            }
+
+            File file = new File(staticDir+"/"+fileName);
+
+            ClassPathResource aStatic = new ClassPathResource("/");
+            System.out.println("==="+aStatic.getFile().getAbsolutePath());
+
+            if(!file.exists()){
+                file.createNewFile();
+                ResponseBody body = netInterface.downloadImg(img).execute().body();
+                BufferedSink bufferedSink = Okio.buffer(Okio.sink(file));
+                bufferedSink.writeAll(body.source());
+                bufferedSink.close();
+                System.out.println("=============net");
+            }
+
+            return config.getLocalAddress()+TEAM_IMG_NAME+"/"+fileName;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Autowired
@@ -197,6 +254,12 @@ public class IndexService {
 
 
     public String getIframeLinkById(String id) {
-        return config.getLocalAddress() + "/bofang/" + id;
+        return config.getLocalAddress() + "live/" + id;
+    }
+
+    public String findCmsLiveById(Integer id) {
+        QueryWrapper<LocalLiveBean> queryWrapper = new QueryWrapper<LocalLiveBean>().eq("id", id);
+        LocalLiveBean localLiveBean = localLiveMapper.selectOne(queryWrapper);
+        return localLiveBean.getLiveLink();
     }
 }

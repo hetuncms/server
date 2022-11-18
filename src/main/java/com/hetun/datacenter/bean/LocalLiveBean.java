@@ -25,15 +25,15 @@ public class LocalLiveBean {
     private String leftName;
     @TableField("is_top")
     private String isTop;
-    @TableField("game_type")
-    private Integer gameType;
+    @TableField("live_type")
+    private Integer liveType;
 
-    public Integer getGameType() {
-        return gameType;
+    public Integer getLiveType() {
+        return liveType;
     }
 
-    public void setGameType(Integer gameType) {
-        this.gameType = gameType;
+    public void setLiveType(Integer liveType) {
+        this.liveType = liveType;
     }
 
     public Integer getId() {

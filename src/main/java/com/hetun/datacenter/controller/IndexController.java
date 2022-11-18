@@ -24,7 +24,6 @@ public class IndexController {
 
     @PostMapping("index")
     public LiveItem index(@RequestHeader Map<String, String> header, @RequestBody(required = false) String requstbody) {
-
         if (!StringUtils.hasText(requstbody)) {
             LiveItem liveItem = new LiveItem();
             liveItem.setStatus(1);
