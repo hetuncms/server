@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 final class FastJsonResponseBodyConvert<T> implements Converter<ResponseBody, T> {
 
-    private Type type;
+    private final Type type;
 
     public FastJsonResponseBodyConvert(Type type) {
         this.type = type;

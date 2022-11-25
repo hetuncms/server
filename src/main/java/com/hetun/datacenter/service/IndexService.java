@@ -2,12 +2,12 @@ package com.hetun.datacenter.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hetun.datacenter.Config;
-import com.hetun.datacenter.bean.BaseBean;
-import com.hetun.datacenter.bean.LiveItem;
-import com.hetun.datacenter.bean.LocalLiveBean;
+import com.hetun.datacenter.bean.*;
 import com.hetun.datacenter.mapper.LocalLiveMapper;
 import com.hetun.datacenter.net.NetInterface;
 import com.hetun.datacenter.net.NetService;
+import com.hetun.datacenter.repository.LiveBeanRepository;
+import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
 import com.hetun.datacenter.tools.chrome.M3u8Sniff;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -17,6 +17,8 @@ import okio.Okio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -24,15 +26,17 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Service
 public class IndexService {
 
     private static final MediaType JSON = MediaType.parse("application/x-www-form-urlencoded;");
+    private final TripartiteLiveBeanRepository tripartiteLiveBeanRepository;
+    private final LiveBeanRepository liveBeanRepository;
     OkHttpClient okHttpClient = new OkHttpClient();
     LocalLiveMapper localLiveMapper;
     Config config;
@@ -40,65 +44,18 @@ public class IndexService {
     private NetInterface netInterface;
 
     @Autowired
-    public IndexService(LocalLiveMapper localLiveMapper, Config config, NetService netService) {
+    public IndexService(LocalLiveMapper localLiveMapper, Config config, NetService netService,
+                        TripartiteLiveBeanRepository tripartiteLiveBeanRepository,
+                        LiveBeanRepository liveBeanRepository) {
         this.localLiveMapper = localLiveMapper;
         this.config = config;
         this.netService = netService;
         System.setProperty("webdriver.chrome.driver", config.getChromeDriverPath());
-
+        this.tripartiteLiveBeanRepository = tripartiteLiveBeanRepository;
+        this.liveBeanRepository = liveBeanRepository;
         netInterface = netService.getRetrofit().create(NetInterface.class);
     }
 
-    @org.springframework.web.bind.annotation.ResponseBody
-    public LiveItem requestData(Map<String, String> header, String requstbody) {
-        LiveItem liveset;
-
-        try {
-            liveset = netInterface.index(requstbody).execute().body();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        List<LiveItem.Item> live_item = liveset.getLive_item();
-        if (live_item == null || liveset.getInfo() != null) {
-            if (liveset.getInfo() == null || liveset.getInfo().isEmpty()) {
-                liveset.setInfo("未知错误");
-            }
-            liveset.setStatus(-1);
-            return liveset;
-        }
-
-        live_item.forEach(item -> {
-//            LiveItem.RelationT relationT = liveset.getT().get(item.getId());
-
-//            if (relationT != null) {
-//                item.setMatchId(relationT.getI());
-//                item.setLid(relationT.getL());
-//            }
-
-            LiveItem.RelationA leftRelationA = liveset.getA().get(item.getI());
-
-            if (leftRelationA != null) {
-                item.setLeftImg(leftRelationA.getN());
-                item.setLeftName(leftRelationA.getI());
-            }
-
-            LiveItem.RelationA rightRelationA = liveset.getA().get(item.getC());
-
-            if (rightRelationA != null) {
-                item.setRightName(rightRelationA.getI());
-                item.setRightImg(rightRelationA.getN());
-            }
-
-            LiveItem.RelationO relationO = liveset.getO().get(item.getH());
-
-            if (relationO != null) {
-                item.setGameName(relationO.getI());
-            }
-        });
-
-        return liveset;
-    }
 
     private String toIframe(Integer id) {
         String iframeAddress = config.getLocalAddress() + "live_cms/" + id;
@@ -133,65 +90,57 @@ public class IndexService {
         return localLiveMapper.selectList(new QueryWrapper<>());
     }
 
-    public LiveItem getIndex(Map<String, String> header, String requstbody) {
-        LiveItem liveItem = requestData(header, requstbody);
+    public static final int PAGE_SIZE = 10;
+
+    public LiveBean getIndex(String requstbody) {
+        Page<MainLiveBean> tripartiteLiveBeans;
+        Integer liveType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
+
         Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
-        Integer gameType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
+        PageRequest of = PageRequest.of(pager, 10);
+        Page<LiveBean.Item> all;
+        if (liveType == 0) {
+            all = liveBeanRepository.findAllUp(of);
+        } else {
+            all = liveBeanRepository.findAllBySportUp(of, liveType);
+        }
+        List<LiveBean.Item> content = all.getContent();
+        LiveBean liveBean = new LiveBean();
+        liveBean.setLive_item(content);
 
-        if (liveItem != null && liveItem.getLive_item() != null) {
-            liveItem.getLive_item().forEach(item -> {
-                item.setIframeLink("");
-
+        if (content != null) {
+            content.forEach(item -> {
                 String leftimg = downloadTeamImg(item.getLeftImg());
                 String rightImg = downloadTeamImg(item.getRightImg());
                 item.setLeftImg(leftimg);
                 item.setRightImg(rightImg);
             });
-
-
         }
+        return liveBean;
+    }
 
-        List<LocalLiveBean> localLiveBeans = localLiveMapper.selectList(new QueryWrapper<>());
+    private LiveItem tripartiteLiveToLiveItem(List<MainLiveBean> mainLiveBeans) {
+        LiveItem liveItem = new LiveItem();
+        liveItem.setLive_item(mainLiveBeans.stream().map(new Function<MainLiveBean, LiveItem.Item>() {
+            @Override
+            public LiveItem.Item apply(MainLiveBean mainLiveBean) {
+                LiveItem.Item item = new LiveItem.Item();
+                item.setLeftName(mainLiveBean.getOpp1());
+                item.setRightName(mainLiveBean.getOpp2());
+                String sport = mainLiveBean.getSport();
+                item.setLiveType(sport.equals("足球") ? 1 : sport.equals("篮球") ? 2 : -1);
+                item.setIsTop(false);
+                try {
+                    item.setDate(new Date(new SimpleDateFormat("yyyy-MM-dd HH:mm")
+                            .parse(Calendar.getInstance().get(1) + "-" + mainLiveBean.getTime()).getTime()));
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                return item;
+            }
+        }).toList());
 
-        if (localLiveBeans != null && pager == 1 && liveItem != null) {
-            localLiveBeans.stream().filter(localLiveBean -> localLiveBean.getLiveType() != null)
-                    .filter(localLiveBean -> localLiveBean.getLiveType().equals(gameType))
-                    .forEach(localLiveBean -> {
-                        LiveItem.Item item = new LiveItem.Item();
-                        item.setLiveType(localLiveBean.getLiveType());
-                        item.setGameName(localLiveBean.getGameName());
-                        item.setLeftImg(localLiveBean.getLeftImg());
-                        item.setPlayid(localLiveBean.getId().toString());
-                        item.setLeftName(localLiveBean.getLeftName());
-                        item.setRightImg(localLiveBean.getRightImg());
-                        item.setRightName(localLiveBean.getRightName());
-                        try {
-                            item.setDate(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(localLiveBean.getDate()));
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
-                        item.setId(localLiveBean.getId());
-                        item.setIsTop(localLiveBean.getIsTop());
-                        item.setTitle(localLiveBean.getGameName());
-                        item.setIframeLink(toIframe(localLiveBean.getId()));
-                        if (liveItem.getLive_item() == null) {
-                            ArrayList<LiveItem.Item> items = new ArrayList<>();
-                            items.add(item);
-                            liveItem.setLive_item(items);
-                        } else {
-                            liveItem.getLive_item().add(item);
-                        }
-
-                        // 筛选置顶
-                        List<LiveItem.Item> top = liveItem.getLive_item().stream().
-                                filter(item1 -> item1.getIsTop().equals("1")).collect(Collectors.toList());
-                        List<LiveItem.Item> noral = liveItem.getLive_item().stream().
-                                filter(item1 -> !item1.getIsTop().equals("1")).toList();
-                        top.addAll(noral);
-                        liveItem.setLive_item(top);
-                    });
-
-        }
+        liveItem.setStatus(20000);
         return liveItem;
     }
 
@@ -202,35 +151,39 @@ public class IndexService {
 
     private String downloadTeamImg(String img) {
         try {
+            if (img == null) {
+                return null;
+            }
             String fileName = img.substring(img.lastIndexOf("/") + 1);
             File staticDir = null;
 
             try {
-                staticDir = new File(getClass().getResource("/static/"+TEAM_IMG_NAME).toURI());
+                staticDir = new File(getClass().getResource("/static/" + TEAM_IMG_NAME).toURI());
             } catch (NullPointerException e) {
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
 
             if (staticDir == null) {
-                staticDir = new File(config.getStaticPath()+TEAM_IMG_NAME);
+                staticDir = new File(config.getStaticPath() + TEAM_IMG_NAME);
             }
 
-            File file = new File(staticDir+"/"+fileName);
+            File file = new File(staticDir + "/" + fileName);
 
             ClassPathResource aStatic = new ClassPathResource("/");
-            System.out.println("==="+aStatic.getFile().getAbsolutePath());
 
-            if(!file.exists()){
+            if (!file.exists()) {
                 file.createNewFile();
                 ResponseBody body = netInterface.downloadImg(img).execute().body();
+                if (body == null) {
+                    return "";
+                }
                 BufferedSink bufferedSink = Okio.buffer(Okio.sink(file));
                 bufferedSink.writeAll(body.source());
                 bufferedSink.close();
-                System.out.println("=============net");
             }
 
-            return config.getLocalAddress()+TEAM_IMG_NAME+"/"+fileName;
+            return config.getLocalAddress() + TEAM_IMG_NAME + "/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -261,5 +214,9 @@ public class IndexService {
         QueryWrapper<LocalLiveBean> queryWrapper = new QueryWrapper<LocalLiveBean>().eq("id", id);
         LocalLiveBean localLiveBean = localLiveMapper.selectOne(queryWrapper);
         return localLiveBean.getLiveLink();
+    }
+
+    public LiveBean.Item getLiveItem(String liveId) {
+        return liveBeanRepository.findAllByLiveId(liveId);
     }
 }

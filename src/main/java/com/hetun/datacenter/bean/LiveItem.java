@@ -1,7 +1,6 @@
 package com.hetun.datacenter.bean;
 
 import ch.qos.logback.core.joran.util.beans.BeanUtil;
-import ch.qos.logback.core.pattern.color.ANSIConstants;
 import ch.qos.logback.core.rolling.helper.IntegerTokenConverter;
 import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,6 +14,13 @@ public class LiveItem {
     private int status;
     private String g;
     private Integer code;
+    @JSONField(name = "messs")
+    private String info;
+    @JSONField(name = "c")
+    private List<Item> live_item;
+    private HashMap<String, RelationT> t;
+    private HashMap<String, RelationA> a;
+    private HashMap<String, RelationO> o;
 
     public Integer getCode() {
         return code;
@@ -23,14 +29,6 @@ public class LiveItem {
     public void setCode(Integer code) {
         this.code = code;
     }
-
-    @JSONField(name = "messs")
-    private String info;
-    @JSONField(name = "c")
-    private List<Item> live_item;
-    private HashMap<String, RelationT> t;
-    private HashMap<String, RelationA> a;
-    private HashMap<String, RelationO> o;
 
     public int getStatus() {
         return this.status;
@@ -107,15 +105,25 @@ public class LiveItem {
         private String c;
         @JSONField(name = "t")
         private Date date;
-        @JSONField(name = ANSIConstants.ESC_END)
-        private String isTop;
+        @JSONField(name = "m")
+        private Boolean isTop;
         private String leftName;
         private String rightName;
         private String leftImg;
         private String rightImg;
         private String gameName;
 
+        private String matchId;
+
         public Item() {
+        }
+
+        public String getMatchId() {
+            return matchId;
+        }
+
+        public void setMatchId(String matchId) {
+            this.matchId = matchId;
         }
 
         public String getIframeLink() {
@@ -126,11 +134,11 @@ public class LiveItem {
             this.iframeLink = iframeLink;
         }
 
-        public String getIsTop() {
+        public Boolean getIsTop() {
             return this.isTop;
         }
 
-        public void setIsTop(String isTop) {
+        public void setIsTop(Boolean isTop) {
             this.isTop = isTop;
         }
 

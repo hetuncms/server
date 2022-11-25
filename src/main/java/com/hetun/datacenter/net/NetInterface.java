@@ -15,5 +15,5 @@ public interface NetInterface {
     Call<LiveItem> index(@Body String requestBody);
 
     @GET
-    public Call<ResponseBody> downloadImg(@Url String url);
+    Call<ResponseBody> downloadImg(@Url String url);
 }
