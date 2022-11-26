@@ -8,7 +8,6 @@ import com.hetun.datacenter.net.NetInterface;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
-import com.hetun.datacenter.tools.chrome.M3u8Sniff;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -67,7 +66,9 @@ public class IndexService {
         if (localLiveBean != null) {
             return localLiveBean.getLiveLink();
         }
-        return getVideoUrl(String.valueOf(id));
+
+
+        return "test";
     }
 
     public BaseBean<Integer> insertLiveStream(LocalLiveBean localLiveBean) {
@@ -188,23 +189,6 @@ public class IndexService {
             throw new RuntimeException(e);
         }
     }
-
-    @Autowired
-    M3u8Sniff m3u8Sniff;
-
-    public String getVideoUrl(String id) {
-//        Future<String> submit = executorService.submit(() -> getM3u8Url("http://www.515.tv/live/" + id));
-//        try {
-//            String o = submit.get(5, TimeUnit.SECONDS);
-//            return o;
-//        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-//            return "";
-//        } finally {
-//            submit.cancel(true);
-//        }
-        return m3u8Sniff.getM3u8Url("http://www.515.tv/live/" + id);
-    }
-
 
     public String getIframeLinkById(String id) {
         return config.getLocalAddress() + "live/" + id;

@@ -38,107 +38,7 @@ public class DataService {
         netInterface = netService.getRetrofit().create(NetInterface.class);
     }
 
-    public String download515Data() {
-        for (int i = 0; i < 3; i++) {
-            String requestBody = "s=0&t=1&a=" + i;
-            int page = 1;
 
-            System.out.println("下载" + i + "==============");
-
-            while (true) {
-                LiveItem liveItem = request515Data(requestBody + "&g=" + page);
-
-                if (liveItem == null) {
-                    break;
-                }
-
-                List<LiveItem.Item> live_item = liveItem.getLive_item();
-
-                if (live_item == null) {
-                    break;
-                }
-
-                int finalI = i;
-                live_item.stream().map(item -> {
-                    LiveBean.Item liveBeanItem = new LiveBean.Item();
-                    liveBeanItem.setLongTime(item.getDate().getTime());
-                    if (finalI == 0) {
-                        liveBeanItem.setHot(true);
-                    }
-                    liveBeanItem.setLiveType(item.getLiveType());
-                    liveBeanItem.setTitle(item.getTitle());
-
-                    liveBeanItem.setTop(item.getIsTop());
-//                    liveBeanItem.setPlayid(item.getPlayid());
-
-                    liveBeanItem.setLeftImg(item.getLeftImg());
-                    liveBeanItem.setRightImg(item.getRightImg());
-
-                    liveBeanItem.setRightName(item.getRightName());
-                    liveBeanItem.setLeftName(item.getLeftName());
-
-                    liveBeanItem.setMatchId(item.getMatchId());
-                    liveBeanItem.setLiveSource("515");
-                    liveBeanItem.setOld(false);
-
-                    // 查找此赛程是否存在本地sql
-                    liveBeanItem.setLiveId(item.getLeftName() + item.getRightName() + item.getDate().getTime() + liveBeanItem.getLiveSource());
-                    updateItem(liveBeanItem);
-
-                    return liveBeanItem;
-                }).toList();
-
-                System.out.println("下载" + i + "===g:" + page);
-                page++;
-            }
-        }
-        return "";
-    }
-
-    public LiveItem request515Data(String requstbody) {
-        LiveItem liveset;
-        try {
-            liveset = netInterface.index(requstbody).execute().body();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (liveset == null || liveset.getLive_item() == null || liveset.getInfo() != null) {
-            return null;
-        }
-
-        List<LiveItem.Item> live_item = liveset.getLive_item();
-        live_item.forEach(item -> {
-            LiveItem.RelationT relationT = liveset.getT().get(String.valueOf(item.getId()));
-
-            if (relationT != null) {
-                item.setMatchId(relationT.getI());
-            }
-
-
-            LiveItem.RelationA leftRelationA = liveset.getA().get(item.getI());
-
-            if (leftRelationA != null) {
-                item.setLeftImg(leftRelationA.getN());
-                item.setLeftName(leftRelationA.getI());
-            }
-
-            LiveItem.RelationA rightRelationA = liveset.getA().get(item.getC());
-
-            if (rightRelationA != null) {
-                item.setRightName(rightRelationA.getI());
-                item.setRightImg(rightRelationA.getN());
-            }
-
-            LiveItem.RelationO relationO = liveset.getO().get(item.getH());
-
-            if (relationO != null) {
-                item.setGameName(relationO.getI());
-            }
-        });
-
-        return liveset;
-    }
 
     public List<LiveItem.Item> requestMainData() {
         JSONArray platformArray;
@@ -232,31 +132,8 @@ public class DataService {
         if (liveBeanRepository.findAll().size() != 0) {
             liveBeanRepository.setAllItemIsOld();
         }
-//        liveBeanRepository.deleteAll();
-        download515Data();
-//        Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
-//        Integer gameType =
-//                Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
-        int pager = 1;
-        int gameType = 1;
-        if (pager == 1) {
-//            List<LiveItem.Item> items = requestLocalData(gameType);
-//            liveItemList.addAll(items);
-        }
-
         List<LiveItem.Item> items = requestMainData();
         deleteOldItem();
-
-//        liveItemList.addAll(items);
-
-
-//        List<LiveItem.Item> top = liveItemList.stream().filter(LiveItem.Item::getIsTop).toList();
-//        List<LiveItem.Item> noTop = liveItemList.stream().filter(item -> !item.getIsTop()).toList();
-//
-//        List<LiveItem.Item> topSorted = new ArrayList<>(top.stream().sorted(Comparator.comparing(LiveItem.Item::getDate)).toList());
-//        List<LiveItem.Item> noTopsorted = noTop.stream().sorted(Comparator.comparing(LiveItem.Item::getDate)).toList();
-//
-//        topSorted.addAll(noTopsorted);
 
     }
 

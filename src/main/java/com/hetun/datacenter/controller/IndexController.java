@@ -35,7 +35,7 @@ public class IndexController {
     }
     @PostMapping("getVideoUrl")
     public String getVideoUrl(String id){
-        return indexService.getVideoUrl(id);
+        return "aaa";
     }
 
     @CrossOrigin

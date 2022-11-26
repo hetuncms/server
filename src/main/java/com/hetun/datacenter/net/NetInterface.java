@@ -16,4 +16,7 @@ public interface NetInterface {
 
     @GET
     Call<ResponseBody> downloadImg(@Url String url);
+
+    @GET
+    Call<ResponseBody> verifyVideoUrl(@Url String url);
 }
