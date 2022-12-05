@@ -60,8 +60,6 @@ public class DataService {
         LiveBean.Item sqlItem = liveBeanRepository.findAllByLiveId(item.getLiveId());
         if (sqlItem != null) {
             item.setId(sqlItem.getId());
-        } else {
-            item.setUpDataCount(1L);
         }
         item.setUpDataCount(sqlItem == null ? 1 : sqlItem.getUpDataCount() + 1);
         item.setUpDataTime(System.currentTimeMillis());

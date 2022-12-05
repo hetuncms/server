@@ -49,7 +49,6 @@ public class IndexService {
         this.localLiveMapper = localLiveMapper;
         this.config = config;
         this.netService = netService;
-        System.setProperty("webdriver.chrome.driver", config.getChromeDriverPath());
         this.tripartiteLiveBeanRepository = tripartiteLiveBeanRepository;
         this.liveBeanRepository = liveBeanRepository;
         netInterface = netService.getRetrofit().create(NetInterface.class);
@@ -200,7 +199,7 @@ public class IndexService {
         return localLiveBean.getLiveLink();
     }
 
-    public LiveBean.Item getLiveItem(String liveId) {
-        return liveBeanRepository.findAllByLiveId(liveId);
+    public LiveBean.Item getLiveItem(Long id) {
+        return liveBeanRepository.findAllById(id);
     }
 }

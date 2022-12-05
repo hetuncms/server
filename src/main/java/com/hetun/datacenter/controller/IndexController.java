@@ -30,7 +30,7 @@ public class IndexController {
     }
 
     @GetMapping("getLiveItem")
-    public LiveBean.Item getLiveItem(@RequestParam("liveId") String liveId){
+    public LiveBean.Item getLiveItem(@RequestParam("liveId") Long liveId){
         return indexService.getLiveItem(liveId);
     }
     @PostMapping("getVideoUrl")
