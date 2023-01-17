@@ -17,21 +17,21 @@ public class Index {
 
     @GetMapping("live/{id}")
     public String index(@PathVariable("id") Integer id, Model model){
-        String liveLink = indexService.findLiveById(id);
-        if (liveLink == null) {
-            return "player";
-        }
-        model.addAttribute("playurl",liveLink);
+//        String liveLink = indexService.findLiveById(id);
+//        if (liveLink == null) {
+//            return "player";
+//        }
+//        model.addAttribute("playurl",liveLink);
         return "player";
     }
 
-    @GetMapping("live_cms/{id}")
-    public String index_cms(@PathVariable("id") Integer id, Model model){
-        String liveLink = indexService.findCmsLiveById(id);
-        if (liveLink == null) {
-            return "player";
-        }
-        model.addAttribute("playurl",liveLink);
-        return "player";
-    }
+//    @GetMapping("live_cms/{id}")
+//    public String index_cms(@PathVariable("id") Integer id, Model model){
+//        String liveLink = indexService.findCmsLiveById(id);
+//        if (liveLink == null) {
+//            return "player";
+//        }
+//        model.addAttribute("playurl",liveLink);
+//        return "player";
+//    }
 }

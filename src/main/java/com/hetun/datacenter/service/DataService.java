@@ -1,20 +1,15 @@
 package com.hetun.datacenter.service;
 
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.hetun.datacenter.Config;
-import com.hetun.datacenter.bean.LiveBean;
 import com.hetun.datacenter.bean.LiveItem;
 import com.hetun.datacenter.bean.MainLiveBean;
-import com.hetun.datacenter.net.NetInterface;
+import com.hetun.datacenter.net.MainDataInterface;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
-import okio.Okio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,7 +20,7 @@ import java.util.List;
 public class DataService {
     private final TripartiteLiveBeanRepository tripartiteLiveBeanRepository;
     private final LiveBeanRepository liveBeanRepository;
-    private final NetInterface netInterface;
+    private final MainDataInterface netInterface;
     Config config;
     NetService netService;
 
@@ -35,29 +30,27 @@ public class DataService {
         this.liveBeanRepository = liveBeanRepository;
         this.config = config;
         this.netService = netService;
-        netInterface = netService.getRetrofit().create(NetInterface.class);
+        netInterface = netService.getRetrofit().create(MainDataInterface.class);
     }
 
 
 
-    public List<LiveItem.Item> requestMainData() {
-        JSONArray platformArray;
+    public void requestMainData() {
+
+        List<MainLiveBean> mainLiveList;
         try {
-            platformArray = com.alibaba.fastjson2.JSON.parseArray(Okio.buffer(Okio.source(new File("E:\\project\\DataCenter\\src\\main\\resources\\test.json"))).readUtf8());
+            mainLiveList = netInterface.requestMainData().execute().body();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        for (Object jsonObject : platformArray) {
-            MainLiveBean mainLiveBean = JSONObject.parseObject(jsonObject.toString(), MainLiveBean.class);
-            LiveBean.Item netItem = tripartiteLiveBeanToLiveBean(mainLiveBean);
+        for (MainLiveBean mainLiveBean : mainLiveList) {
+            LiveItem netItem = tripartiteLiveBeanToLiveBean(mainLiveBean);
             updateItem(netItem);
         }
-        return null;
     }
 
-    private void updateItem(LiveBean.Item item) {
-        LiveBean.Item sqlItem = liveBeanRepository.findAllByLiveId(item.getLiveId());
+    private void updateItem(LiveItem item) {
+        LiveItem sqlItem = liveBeanRepository.findAllByLiveId(item.getLiveId());
         if (sqlItem != null) {
             item.setId(sqlItem.getId());
         }
@@ -73,11 +66,11 @@ public class DataService {
         }
     }
 
-    LiveBean.Item tripartiteLiveBeanToLiveBean(MainLiveBean mainLiveBean) {
-        LiveBean.Item item = new LiveBean.Item();
+    LiveItem tripartiteLiveBeanToLiveBean(MainLiveBean mainLiveBean) {
+        LiveItem item = new LiveItem();
         item.setLeftName(mainLiveBean.getOpp1());
         item.setRightName(mainLiveBean.getOpp2());
-        item.setTop(false);
+        item.setIsTop(false);
         item.setLiveType(mainLiveBean.getSportId() == 1 ? 1 : mainLiveBean.getSportId() == 3 ? 2 : mainLiveBean.getSportId());
         item.setLiveSource("live_main");
         item.setLiveId(mainLiveBean.getOpp1ID() + mainLiveBean.getOpp2ID() + mainLiveBean.getLongTime()+item.getLiveSource());
@@ -130,7 +123,7 @@ public class DataService {
         if (liveBeanRepository.findAll().size() != 0) {
             liveBeanRepository.setAllItemIsOld();
         }
-        List<LiveItem.Item> items = requestMainData();
+        requestMainData();
         deleteOldItem();
 
     }

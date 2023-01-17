@@ -1,234 +1,105 @@
 package com.hetun.datacenter.bean;
 
-import ch.qos.logback.core.joran.util.beans.BeanUtil;
-import ch.qos.logback.core.rolling.helper.IntegerTokenConverter;
-import com.alibaba.fastjson2.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import javax.persistence.*;
 
-@JsonIgnoreProperties(value = {"t", "a", "o", "g"}, allowSetters = true)
-public class LiveItem {
-    private int status;
-    private String g;
-    private Integer code;
-    @JSONField(name = "messs")
-    private String info;
-    @JSONField(name = "c")
-    private List<Item> live_item;
-    private HashMap<String, RelationT> t;
-    private HashMap<String, RelationA> a;
-    private HashMap<String, RelationO> o;
+@Entity
+    @Table(name = "live_table")
+    @JsonIgnoreProperties(value = {"liveSource","old","hot","upDataTime","upDataCount"})
+    public class LiveItem {
 
-    public Integer getCode() {
-        return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
-    }
-
-    public int getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getG() {
-        return this.g;
-    }
-
-    public void setG(String g) {
-        this.g = g;
-    }
-
-    public List<Item> getLive_item() {
-        return this.live_item;
-    }
-
-    public void setLive_item(List<Item> live_item) {
-        this.live_item = live_item;
-    }
-
-    public HashMap<String, RelationT> getT() {
-        return this.t;
-    }
-
-    public void setT(HashMap<String, RelationT> t) {
-        this.t = t;
-    }
-
-    public HashMap<String, RelationA> getA() {
-        return this.a;
-    }
-
-    public void setA(HashMap<String, RelationA> a) {
-        this.a = a;
-    }
-
-    public HashMap<String, RelationO> getO() {
-        return this.o;
-    }
-
-    public void setO(HashMap<String, RelationO> o) {
-        this.o = o;
-    }
-
-    public String getInfo() {
-        return this.info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
-
-    @JsonIgnoreProperties(value = {"h", IntegerTokenConverter.CONVERTER_KEY, "c"}, allowSetters = true)
-    public static class Item {
-        @JSONField(name = "aw")
-        private Integer id;
-        @JSONField(name = BeanUtil.PREFIX_GETTER_IS)
-        private String playid;
-        @JSONField(name = "co")
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        @Column(name = "id", nullable = false)
+        private Long id;
+        private String liveId;
         private Integer liveType;
-        @JSONField(name = "h")
-        private String iframeLink;
-        private String h;
-        @JSONField(name = "a")
+        private Boolean liveStatus;
+
+        private String liveSource;
         private String title;
-        @JSONField(name = IntegerTokenConverter.CONVERTER_KEY)
-        private String i;
-        @JSONField(name = "c")
-        private String c;
-        @JSONField(name = "t")
-        private Date date;
-        @JSONField(name = "m")
+        private Long longTime;
         private Boolean isTop;
         private String leftName;
         private String rightName;
         private String leftImg;
         private String rightImg;
         private String gameName;
-
         private String matchId;
 
-        public Item() {
+        private Long upDataTime;
+
+        private Long upDataCount;
+        private Boolean isHot;
+
+        private Boolean isOld;
+
+        public Boolean getOld() {
+            return isOld;
         }
 
-        public String getMatchId() {
-            return matchId;
+        public void setOld(Boolean old) {
+            isOld = old;
         }
 
-        public void setMatchId(String matchId) {
-            this.matchId = matchId;
+        public LiveItem() {
         }
 
-        public String getIframeLink() {
-            return this.iframeLink;
+        public Boolean getHot() {
+            return isHot;
         }
 
-        public void setIframeLink(String iframeLink) {
-            this.iframeLink = iframeLink;
+        public void setHot(Boolean hot) {
+            isHot = hot;
         }
 
-        public Boolean getIsTop() {
-            return this.isTop;
+        public Long getUpDataTime() {
+            return upDataTime;
         }
 
-        public void setIsTop(Boolean isTop) {
-            this.isTop = isTop;
+        public void setUpDataTime(Long upDataTime) {
+            this.upDataTime = upDataTime;
         }
 
-        public Date getDate() {
-            return this.date;
+        public Long getUpDataCount() {
+            return upDataCount;
         }
 
-        public void setDate(Date date) {
-            this.date = date;
+        public void setUpDataCount(Long upDataCount) {
+            this.upDataCount = upDataCount;
         }
 
-        public String getGameName() {
-            return this.gameName;
+        public String getLiveSource() {
+            return liveSource;
         }
 
-        public void setGameName(String gameName) {
-            this.gameName = gameName;
+        public void setLiveSource(String liveSource) {
+            this.liveSource = liveSource;
         }
 
-        public String getLeftImg() {
-            return this.leftImg;
+        public Long getId() {
+            return id;
         }
 
-        public void setLeftImg(String leftImg) {
-            this.leftImg = leftImg;
-        }
-
-        public String getRightImg() {
-            return this.rightImg;
-        }
-
-        public void setRightImg(String rightImg) {
-            this.rightImg = rightImg;
-        }
-
-        public String getLeftName() {
-            return this.leftName;
-        }
-
-        public void setLeftName(String leftName) {
-            this.leftName = leftName;
-        }
-
-        public Integer getId() {
-            return this.id;
-        }
-
-        public void setId(Integer id) {
+        public void setId(Long id) {
             this.id = id;
         }
 
-        public String getPlayid() {
-            return this.playid;
-        }
-
-        public void setPlayid(String playid) {
-            this.playid = playid;
-        }
-
         public Integer getLiveType() {
-            return this.liveType;
+            return liveType;
         }
 
         public void setLiveType(Integer liveType) {
             this.liveType = liveType;
         }
 
-        public String getH() {
-            return this.h;
+        public Boolean getLiveStatus() {
+            return liveStatus;
         }
 
-        public void setH(String h) {
-            this.h = h;
-        }
-
-
-        public String getI() {
-            return this.i;
-        }
-
-        public void setI(String i) {
-            this.i = i;
-        }
-
-        public String getC() {
-            return this.c;
-        }
-
-        public void setC(String c) {
-            this.c = c;
+        public void setLiveStatus(Boolean liveStatus) {
+            this.liveStatus = liveStatus;
         }
 
         public String getTitle() {
@@ -239,102 +110,76 @@ public class LiveItem {
             this.title = title;
         }
 
+        public Long getLongTime() {
+            return longTime;
+        }
+
+        public void setLongTime(Long longTime) {
+            this.longTime = longTime;
+        }
+
+        public Boolean getIsTop() {
+            return isTop;
+        }
+
+
+        public void setIsTop(Boolean top) {
+            isTop = top;
+        }
+
+        public String getLeftName() {
+            return leftName;
+        }
+
+        public void setLeftName(String leftName) {
+            this.leftName = leftName;
+        }
+
         public String getRightName() {
-            return this.rightName;
+            return rightName;
         }
 
         public void setRightName(String rightName) {
             this.rightName = rightName;
         }
-    }
 
-    public class RelationA {
-        private String n;
-        private String i;
-        private String l;
-
-        public RelationA() {
+        public String getLiveId() {
+            return liveId;
         }
 
-        public String getN() {
-            return this.n;
+        public void setLiveId(String liveId) {
+            this.liveId = liveId;
         }
 
-        public void setN(String n) {
-            this.n = n;
+        public String getLeftImg() {
+            return leftImg;
         }
 
-        public String getI() {
-            return this.i;
+        public void setLeftImg(String leftImg) {
+            this.leftImg = leftImg;
         }
 
-        public void setI(String i) {
-            this.i = i;
+        public String getRightImg() {
+            return rightImg;
         }
 
-        public String getL() {
-            return this.l;
+        public void setRightImg(String rightImg) {
+            this.rightImg = rightImg;
         }
 
-        public void setL(String l) {
-            this.l = l;
-        }
-    }
-
-    public class RelationT {
-        private String l;
-        private String i;
-        private String s;
-
-        public RelationT() {
+        public String getGameName() {
+            return gameName;
         }
 
-        public String getL() {
-            return this.l;
+        public void setGameName(String gameName) {
+            this.gameName = gameName;
         }
 
-        public void setL(String l) {
-            this.l = l;
+        public String getMatchId() {
+            return matchId;
         }
 
-        public String getI() {
-            return this.i;
-        }
-
-        public void setI(String i) {
-            this.i = i;
-        }
-
-        public String getS() {
-            return this.s;
-        }
-
-        public void setS(String s) {
-            this.s = s;
+        public void setMatchId(String matchId) {
+            this.matchId = matchId;
         }
     }
-
-    public class RelationO {
-        private String i;
-        private String n;
-
-        public RelationO() {
-        }
-
-        public String getI() {
-            return this.i;
-        }
-
-        public void setI(String i) {
-            this.i = i;
-        }
-
-        public String getN() {
-            return this.n;
-        }
-
-        public void setN(String n) {
-            this.n = n;
-        }
-    }
-}

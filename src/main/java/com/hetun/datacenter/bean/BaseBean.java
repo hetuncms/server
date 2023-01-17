@@ -38,6 +38,11 @@ public class BaseBean<T> {
             baseBean.setData(data);
             return baseBean;
         }
+        public <T> BaseBean<T>  build(){
+            BaseBean<T> baseBean = new BaseBean<>();
+            baseBean.setCode(20000);
+            return baseBean;
+        }
         public <T> BaseBean<T>  buildError(String msg){
             BaseBean<T> baseBean = new BaseBean<>();
             baseBean.setCode(50000);

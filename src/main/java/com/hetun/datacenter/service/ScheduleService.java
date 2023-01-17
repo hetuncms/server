@@ -15,6 +15,6 @@ public class ScheduleService {
 
     @Scheduled(fixedRate = 500000)
     public void schedule() {
-//        dataService.requestData();
+        dataService.requestData();
     }
 }

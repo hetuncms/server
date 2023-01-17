@@ -25,7 +25,7 @@ public class LoginController {
         if (StringUtils.hasText(token)) {
             return new BaseBean.Builder().build(token);
         }
-        return null;
+        return new BaseBean.Builder().buildError("登录失败");
     }
 
     @GetMapping("/info")

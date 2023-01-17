@@ -16,19 +16,21 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-	implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.14'
 
+	implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
 	implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
 
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.seleniumhq.selenium:selenium-java:4.5.3'
-	implementation 'com.auth0:java-jwt:4.2.0'
+
+	implementation 'com.auth0:java-jwt:4.2.1'
 	implementation 'org.xerial:sqlite-jdbc'
 
-	implementation 'com.squareup.retrofit2:retrofit:+'
-	implementation 'com.squareup.retrofit2:converter-scalars:2.3.0'
+	implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+	implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
 	implementation 'p6spy:p6spy:3.9.1'
 	implementation 'org.postgresql:postgresql'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'junit:junit:4.13.1'
 }
 
 tasks.named('test') {
@@ -36,7 +38,6 @@ tasks.named('test') {
 }
 
 bootJar {
-	baseName="server"
 	version("")
 
 	exclude("static/**")

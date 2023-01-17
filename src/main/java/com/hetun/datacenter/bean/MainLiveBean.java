@@ -1,6 +1,8 @@
 package com.hetun.datacenter.bean;
 
-import com.alibaba.fastjson2.annotation.JSONField;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.text.ParseException;
@@ -12,57 +14,57 @@ import java.util.Calendar;
 public class MainLiveBean {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false)
+    @Column(name= "id", nullable = false)
     private Long id;
 
-    @JSONField(name = "Liga")
+    @JsonProperty("Liga")
     private String liga;
-    @JSONField(name = "Opp1")
+    @JsonProperty("Opp1")
     private String opp1;
 
-    @JSONField(name = "Opp2")
+    @JsonProperty("Opp2")
     private String opp2;
 
-    @JSONField(name = "Sport")
+    @JsonProperty("Sport")
     private String sport;
 
-    @JSONField(name = "O1Logo")
+    @JsonProperty("O1Logo")
     private String o1Logo;
-    @JSONField(name = "O2Logo")
+    @JsonProperty("O2Logo")
     private String o2Logo;
-    @JSONField(name = "Opp1ID")
+    @JsonProperty("Opp1ID")
     private String opp1ID;
-    @JSONField(name = "Opp2ID")
+    @JsonProperty("Opp2ID")
     private String opp2ID;
-    @JSONField(name = "LeagueID")
+    @JsonProperty("LeagueID")
     private String leagueID;
-    @JSONField(name = "vid")
+    @JsonProperty("vid")
     private String vid;
-    @JSONField(name = "Scores")
+    @JsonProperty("Scores")
     private String scores;
-    @JSONField(name = "SportId")
+    @JsonProperty("SportId")
     private int sportId;
-    @JSONField(name = "Time")
+    @JsonProperty("Time")
     private String time;
 
     private Long longTime;
-    @JSONField(name = "StreamName")
+    @JsonProperty("StreamName")
     private String streamName;
-    @JSONField(name = "Matchtime")
+    @JsonProperty("Matchtime")
     private long matchtime;
-    @JSONField(name = "StreamType")
+    @JsonProperty("StreamType")
     private String streamType;
-    @JSONField(name = "StreamFrom")
+    @JsonProperty("StreamFrom")
     private String streamFrom;
-    @JSONField(name = "StreamInfo")
+    @JsonProperty("StreamInfo")
 
     private StreamInfo streamInfo;
-    @JSONField(name = "Odds")
+    @JsonProperty("Odds")
     private Odds odds;
-    @JSONField(name = "MatchInfo")
+    @JsonProperty("MatchInfo")
 
     private MatchInfo matchInfo;
-    @JSONField(name = "StreamSource")
+    @JsonProperty("StreamSource")
     private int streamSource;
 
     public Long getId() {
@@ -83,25 +85,34 @@ public class MainLiveBean {
 
     @Embeddable
     public static class MatchInfo {
-        @JSONField(name = "Section")
+        @JsonProperty("Section")
         private int section;
-        @JSONField(name = "PlayingTime")
+        @JsonProperty("PlayingTime")
         private int playingTime;
-        @JSONField(name = "AddTime")
+        @JsonProperty("AddTime")
         private String addTime;
-        @JSONField(name = "YellowCard1")
+        @JsonProperty("YellowCard1")
         private String yellowCard1;
-        @JSONField(name = "YellowCard2")
+        @JsonProperty("YellowCard2")
         private String yellowCard2;
-        @JSONField(name = "RedCard1")
+        @JsonProperty("RedCard1")
         private String redCard1;
-        @JSONField(name = "RedCard2")
+        @JsonProperty("RedCard2")
         private String redCard2;
-        @JSONField(name = "Status")
+        @JsonProperty("Status")
         private int status;
-
+        @JsonProperty("SectionText")
+        private String sectionText;
         public void setSection(int Section) {
             this.section = Section;
+        }
+
+        public String getSectionText() {
+            return sectionText;
+        }
+
+        public void setSectionText(String sectionText) {
+            this.sectionText = sectionText;
         }
 
         public int getSection() {
@@ -178,13 +189,13 @@ public class MainLiveBean {
 
         @Embeddable
         public static class Audio {
-            @Column(name = "audio_codec")
+            @Column(name= "audio_codec")
             private String codec;
-            @Column(name = "audio_sample_rate")
+            @Column(name="audio_sample_rate")
             private int sample_rate;
-            @Column(name = "audio_channel")
+            @Column(name="audio_channel")
             private int channel;
-            @Column(name = "audio_profile")
+            @Column(name="audio_profile")
             private String profile;
 
             public void setCodec(String codec) {
@@ -222,13 +233,14 @@ public class MainLiveBean {
         }
 
         @Embeddable
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Video {
 
-            @Column(name = "video_codec")
+            @Column(name="video_codec")
             private String codec;
-            @Column(name = "video_profile")
+            @Column(name="video_profile")
             private String profile;
-            @Column(name = "video_level")
+            @Column(name="video_level")
             private String level;
 
             public void setCodec(String codec) {
@@ -293,26 +305,26 @@ public class MainLiveBean {
 
     @Embeddable
     public static class Odds {
-        @JSONField(name = "Euro")
+        @JsonProperty("Euro")
 
         private Euro euro;
-        @JSONField(name = "Letgoal")
+        @JsonProperty("Letgoal")
 
         private Letgoal letgoal;
 
-        @JSONField(name = "Score")
+        @JsonProperty("Score")
         private Score score;
 
         @Embeddable
         public static class Score {
-            @JSONField(name = "Home")
-            @Column(name = "score_home")
+            @JsonProperty("Home")
+            @Column(name="score_home")
             private double home;
-            @JSONField(name = "Draw")
-            @Column(name = "score_draw")
+            @JsonProperty("Draw")
+            @Column(name="score_draw")
             private double draw;
-            @JSONField(name = "Away")
-            @Column(name = "score_away")
+            @JsonProperty("Away")
+            @Column(name="score_away")
             private double scoreAway;
 
             public void setHome(double Home) {
@@ -343,14 +355,14 @@ public class MainLiveBean {
         @Embeddable
         public static class Letgoal {
 
-            @Column(name = "letgoal_home")
-            @JSONField(name = "Home")
+            @Column(name="letgoal_home")
+            @JsonProperty("Home")
             private double home;
-            @Column(name = "letgoal_draw")
-            @JSONField(name = "Draw")
+            @Column(name="letgoal_draw")
+            @JsonProperty("Draw")
             private String draw;
-            @JSONField(name = "Away")
-            @Column(name = "letgoal_away")
+            @JsonProperty("Away")
+            @Column(name="letgoal_away")
             private double away;
 
             public void setHome(double Home) {
@@ -375,11 +387,11 @@ public class MainLiveBean {
         @Embeddable
         public static class Euro {
 
-            @JSONField(name = "Home")
+            @JsonProperty("Home")
             private double home;
-            @JSONField(name = "Draw")
+            @JsonProperty("Draw")
             private double draw;
-            @JSONField(name = "Away")
+            @JsonProperty("Away")
             private double away;
 
             public void setHome(double Home) {
@@ -542,10 +554,6 @@ public class MainLiveBean {
 
     public String getTime() {
         return time;
-    }
-
-    public void setStreamName(String StreamName) {
-        this.streamName = StreamName;
     }
 
     public String getStreamName() {

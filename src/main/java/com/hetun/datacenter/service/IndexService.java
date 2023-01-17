@@ -1,15 +1,14 @@
 package com.hetun.datacenter.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.hetun.datacenter.Config;
-import com.hetun.datacenter.bean.*;
-import com.hetun.datacenter.mapper.LocalLiveMapper;
+import com.hetun.datacenter.bean.BaseBean;
+import com.hetun.datacenter.bean.LiveBean;
+import com.hetun.datacenter.bean.LiveItem;
 import com.hetun.datacenter.net.NetInterface;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
@@ -23,12 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.function.Function;
 
 @Service
 public class IndexService {
@@ -36,17 +30,14 @@ public class IndexService {
     private static final MediaType JSON = MediaType.parse("application/x-www-form-urlencoded;");
     private final TripartiteLiveBeanRepository tripartiteLiveBeanRepository;
     private final LiveBeanRepository liveBeanRepository;
-    OkHttpClient okHttpClient = new OkHttpClient();
-    LocalLiveMapper localLiveMapper;
     Config config;
     NetService netService;
     private NetInterface netInterface;
 
     @Autowired
-    public IndexService(LocalLiveMapper localLiveMapper, Config config, NetService netService,
+    public IndexService(Config config, NetService netService,
                         TripartiteLiveBeanRepository tripartiteLiveBeanRepository,
                         LiveBeanRepository liveBeanRepository) {
-        this.localLiveMapper = localLiveMapper;
         this.config = config;
         this.netService = netService;
         this.tripartiteLiveBeanRepository = tripartiteLiveBeanRepository;
@@ -60,51 +51,50 @@ public class IndexService {
         return iframeAddress;
     }
 
-    public String findLiveById(Integer id) {
-        LocalLiveBean localLiveBean = localLiveMapper.selectById(id);
-        if (localLiveBean != null) {
-            return localLiveBean.getLiveLink();
-        }
-
-
-        return "test";
-    }
-
-    public BaseBean<Integer> insertLiveStream(LocalLiveBean localLiveBean) {
-        String date = localLiveBean.getDate();
-        try {
-            new SimpleDateFormat("yyyy-MM-dd").parse(date);
-        } catch (ParseException e) {
-            return new BaseBean.Builder().buildError("date error");
-        }
-        int insert = localLiveMapper.insert(localLiveBean);
-        return new BaseBean.Builder().build(insert);
-    }
-
-    public BaseBean<Integer> deleteLiveStream(LocalLiveBean localLiveBean) {
-        int delete = localLiveMapper.deleteById(localLiveBean);
-        return new BaseBean.Builder().build(delete);
-    }
-
-    public List<LocalLiveBean> getLocalStream() {
-        return localLiveMapper.selectList(new QueryWrapper<>());
-    }
+//    public String findLiveById(Integer id) {
+//        LocalLiveBean localLiveBean = localLiveMapper.selectById(id);
+//        if (localLiveBean != null) {
+//            return localLiveBean.getLiveLink();
+//        }
+//
+//
+//        return "test";
+//    }
+//
+//    public BaseBean<Integer> insertLiveStream(LocalLiveBean localLiveBean) {
+//        String date = localLiveBean.getDate();
+//        try {
+//            new SimpleDateFormat("yyyy-MM-dd").parse(date);
+//        } catch (ParseException e) {
+//            return new BaseBean.Builder().buildError("date error");
+//        }
+//        int insert = localLiveMapper.insert(localLiveBean);
+//        return new BaseBean.Builder().build(insert);
+//    }
+//
+//    public BaseBean<Integer> deleteLiveStream(LocalLiveBean localLiveBean) {
+//        int delete = localLiveMapper.deleteById(localLiveBean);
+//        return new BaseBean.Builder().build(delete);
+//    }
+//
+//    public List<LocalLiveBean> getLocalStream() {
+//        return localLiveMapper.selectList(new QueryWrapper<>());
+//    }
 
     public static final int PAGE_SIZE = 10;
 
     public LiveBean getIndex(String requstbody) {
-        Page<MainLiveBean> tripartiteLiveBeans;
         Integer liveType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
 
         Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
         PageRequest of = PageRequest.of(pager, 10);
-        Page<LiveBean.Item> all;
+        Page<LiveItem> all;
         if (liveType == 0) {
             all = liveBeanRepository.findAllUp(of);
         } else {
             all = liveBeanRepository.findAllBySportUp(of, liveType);
         }
-        List<LiveBean.Item> content = all.getContent();
+        List<LiveItem> content = all.getContent();
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
 
@@ -119,29 +109,9 @@ public class IndexService {
         return liveBean;
     }
 
-    private LiveItem tripartiteLiveToLiveItem(List<MainLiveBean> mainLiveBeans) {
-        LiveItem liveItem = new LiveItem();
-        liveItem.setLive_item(mainLiveBeans.stream().map(new Function<MainLiveBean, LiveItem.Item>() {
-            @Override
-            public LiveItem.Item apply(MainLiveBean mainLiveBean) {
-                LiveItem.Item item = new LiveItem.Item();
-                item.setLeftName(mainLiveBean.getOpp1());
-                item.setRightName(mainLiveBean.getOpp2());
-                String sport = mainLiveBean.getSport();
-                item.setLiveType(sport.equals("足球") ? 1 : sport.equals("篮球") ? 2 : -1);
-                item.setIsTop(false);
-                try {
-                    item.setDate(new Date(new SimpleDateFormat("yyyy-MM-dd HH:mm")
-                            .parse(Calendar.getInstance().get(1) + "-" + mainLiveBean.getTime()).getTime()));
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-                return item;
-            }
-        }).toList());
-
-        liveItem.setStatus(20000);
-        return liveItem;
+    public BaseBean<List<LiveItem>> getAllIndex() {
+        List<LiveItem> all = liveBeanRepository.findAll();
+        return new BaseBean.Builder().build(all);
     }
 
     @Autowired
@@ -193,13 +163,20 @@ public class IndexService {
         return config.getLocalAddress() + "live/" + id;
     }
 
-    public String findCmsLiveById(Integer id) {
-        QueryWrapper<LocalLiveBean> queryWrapper = new QueryWrapper<LocalLiveBean>().eq("id", id);
-        LocalLiveBean localLiveBean = localLiveMapper.selectOne(queryWrapper);
-        return localLiveBean.getLiveLink();
+//    public String findCmsLiveById(Integer id) {
+//        QueryWrapper<LocalLiveBean> queryWrapper = new QueryWrapper<LocalLiveBean>().eq("id", id);
+//        LocalLiveBean localLiveBean = localLiveMapper.selectOne(queryWrapper);
+//        return localLiveBean.getLiveLink();
+//    }
+
+    public LiveItem getLiveItem(Long id) {
+        return liveBeanRepository.findAllById(id);
     }
 
-    public LiveBean.Item getLiveItem(Long id) {
-        return liveBeanRepository.findAllById(id);
+    public BaseBean<Integer> updateLiveItem(LiveItem liveItem) {
+        LiveItem byLiveId = liveBeanRepository.findByLiveId(liveItem.getLiveId());
+        liveItem.setId(byLiveId.getId());
+        liveBeanRepository.save(liveItem);
+        return new BaseBean.Builder().build();
     }
 }
