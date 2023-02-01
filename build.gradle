@@ -38,8 +38,7 @@ tasks.named('test') {
 }
 
 bootJar {
-	version("")
-
+	archiveName("server.jar")
 	exclude("static/**")
 	exclude("application.properties")
 	exclude("spy.properties")

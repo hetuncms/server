@@ -20,7 +20,7 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Override
     <S extends LiveItem> S save(S entity);
 
-    @Query(value = "select * from live_table  where live_type = :type and (live_status=true or long_time>floor(extract(epoch from now())*1000)) order by is_top desc,long_time", nativeQuery = true)
+    @Query(value = "select * from live_table  where live_type = :type order by is_top desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllBySportUp(Pageable pageable, @Param("type") Integer type);
 
 
@@ -41,7 +41,7 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Modifying
     @Query(value = "DELETE FROM live_table WHERE is_old=true", nativeQuery = true)
     void deleteAllByOld();
-    @Query(value = "select * from live_table  where live_status=true or long_time>floor(extract(epoch from now())*1000) order by is_top desc,long_time", nativeQuery = true)
+    @Query(value = "select * from live_table order by is_top desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
     LiveItem findByLiveId(String liveid);

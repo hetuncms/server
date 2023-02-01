@@ -13,7 +13,7 @@ public class ScheduleService {
         this.dataService = dataService;
     }
 
-    @Scheduled(fixedRate = 500000)
+    @Scheduled(fixedRate = 120*1000)
     public void schedule() {
         dataService.requestData();
     }

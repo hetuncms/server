@@ -98,14 +98,14 @@ public class IndexService {
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
 
-        if (content != null) {
-            content.forEach(item -> {
-                String leftimg = downloadTeamImg(item.getLeftImg());
-                String rightImg = downloadTeamImg(item.getRightImg());
-                item.setLeftImg(leftimg);
-                item.setRightImg(rightImg);
-            });
-        }
+//        if (content != null) {
+//            content.forEach(item -> {
+//                String leftimg = downloadTeamImg(item.getLeftImg());
+//                String rightImg = downloadTeamImg(item.getRightImg());
+//                item.setLeftImg(leftimg);
+//                item.setRightImg(rightImg);
+//            });
+//        }
         return liveBean;
     }
 

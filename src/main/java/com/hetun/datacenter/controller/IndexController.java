@@ -8,17 +8,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class IndexController {
-
-
     IndexService indexService;
-
 
     @Autowired
     public IndexController(IndexService indexService) {
         this.indexService = indexService;
     }
-
-
 
     @PostMapping("index")
     public LiveBean index(@RequestBody(required = false) String requstbody) {
@@ -30,7 +25,7 @@ public class IndexController {
         return indexService.getLiveItem(liveId);
     }
     @PostMapping("getVideoUrl")
-    public String getVideoUrl(String id){
+    public String getVideoUrl(String id) {
         return "aaa";
     }
 

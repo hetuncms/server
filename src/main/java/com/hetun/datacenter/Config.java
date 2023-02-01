@@ -12,8 +12,15 @@ public class Config {
     @Value("${spring.web.resources.static-locations}")
     private String staticPath;
 
+    @Value("${app.proxy}")
+    private boolean useProxy;
+
     public String getStaticPath() {
         return staticPath;
+    }
+
+    public boolean getUseProxy() {
+        return useProxy;
     }
 
     public String getLocalAddress() {
