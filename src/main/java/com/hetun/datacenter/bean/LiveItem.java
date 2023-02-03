@@ -1,8 +1,7 @@
 package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "live_table")
@@ -15,7 +14,7 @@ public class LiveItem {
     private Long id;
     private String liveId;
     private Integer liveType;
-    private Boolean liveStatus;
+    private Integer liveStatus;
 
     private String liveSource;
     private String title;
@@ -26,7 +25,7 @@ public class LiveItem {
     private String leftImg;
     private String rightImg;
     private String gameName;
-    private String matchId;
+    private Long matchId;
 
     private Long upDataTime;
 
@@ -34,8 +33,26 @@ public class LiveItem {
     private Boolean isHot;
 
     private Boolean isOld;
+    @Column(nullable = false)
+    private Boolean isLiveing;
 
     public LiveItem() {
+    }
+
+    public Boolean getTop() {
+        return isTop;
+    }
+
+    public void setTop(Boolean top) {
+        isTop = top;
+    }
+
+    public Boolean getLiveing() {
+        return isLiveing;
+    }
+
+    public void setLiveing(Boolean liveing) {
+        isLiveing = liveing;
     }
 
     public Boolean getOld() {
@@ -94,11 +111,11 @@ public class LiveItem {
         this.liveType = liveType;
     }
 
-    public Boolean getLiveStatus() {
+    public Integer getLiveStatus() {
         return liveStatus;
     }
 
-    public void setLiveStatus(Boolean liveStatus) {
+    public void setLiveStatus(Integer liveStatus) {
         this.liveStatus = liveStatus;
     }
 
@@ -175,11 +192,11 @@ public class LiveItem {
         this.gameName = gameName;
     }
 
-    public String getMatchId() {
+    public Long getMatchId() {
         return matchId;
     }
 
-    public void setMatchId(String matchId) {
+    public void setMatchId(Long matchId) {
         this.matchId = matchId;
     }
 }

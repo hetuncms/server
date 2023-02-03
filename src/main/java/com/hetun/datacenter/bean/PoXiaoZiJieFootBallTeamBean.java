@@ -1,9 +1,12 @@
 package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import javax.persistence.*;
 import java.util.List;
+
 
 public class PoXiaoZiJieFootBallTeamBean {
     private int code;

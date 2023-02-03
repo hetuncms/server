@@ -20,7 +20,7 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Override
     <S extends LiveItem> S save(S entity);
 
-    @Query(value = "select * from live_table  where live_type = :type order by is_top desc,long_time", nativeQuery = true)
+    @Query(value = "select * from live_table  where live_type = :type order by is_top desc,is_liveing desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllBySportUp(Pageable pageable, @Param("type") Integer type);
 
 
@@ -34,6 +34,9 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Query(value = "select * from live_table  where live_id = :liveId order by is_top desc,long_time", nativeQuery = true)
     LiveItem findAllByLiveId(@Param("liveId") String liveId);
 
+//    @Query(value = "select * from live_table  where match_id = :match_id order by is_top desc,long_time", nativeQuery = true)
+    LiveItem findByMatchId(Long matchId);
+
     @Modifying
     @Query(value = "update live_table set is_old = true", nativeQuery = true)
     void setAllItemIsOld();
@@ -41,7 +44,7 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Modifying
     @Query(value = "DELETE FROM live_table WHERE is_old=true", nativeQuery = true)
     void deleteAllByOld();
-    @Query(value = "select * from live_table order by is_top desc,long_time", nativeQuery = true)
+    @Query(value = "select * from live_table order by is_top desc,is_liveing desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
     LiveItem findByLiveId(String liveid);

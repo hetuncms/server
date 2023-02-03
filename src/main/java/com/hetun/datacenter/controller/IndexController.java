@@ -2,6 +2,7 @@ package com.hetun.datacenter.controller;
 
 import com.hetun.datacenter.bean.LiveBean;
 import com.hetun.datacenter.bean.LiveItem;
+import com.hetun.datacenter.bean.PlayInfoBean;
 import com.hetun.datacenter.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,11 @@ public class IndexController {
     @PostMapping("index")
     public LiveBean index(@RequestBody(required = false) String requstbody) {
         return indexService.getIndex(requstbody);
+    }
+
+    @GetMapping("getPlayInfo")
+    public PlayInfoBean getPlayInfo(@RequestParam("matchId") Long id){
+        return indexService.getPlayInfo(id);
     }
 
     @GetMapping("getLiveItem")

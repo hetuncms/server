@@ -1,11 +1,15 @@
 
 package com.hetun.datacenter.bean;
 
-import javax.persistence.*;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "login_table")
 public class LoginBean {
+    public LoginBean() {
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)

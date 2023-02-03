@@ -9,6 +9,7 @@ import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.PoXiaoBasketBallTeamRepository;
 import com.hetun.datacenter.repository.PoXiaoFootBallTeamRepository;
+import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class DataService {
     private final LiveBeanRepository liveBeanRepository;
     private final PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository;
     private final PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository;
+    private final PoXiaoLiveInfoRepository poXiaoLiveInfoRepository;
     private final MainDataInterface netInterface;
     private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
     Config config;
@@ -33,9 +35,10 @@ public class DataService {
     Boolean teamUpdate;
 
     @Autowired
-    public DataService(LiveBeanRepository liveBeanRepository, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, Config config, NetService netService) {
+    public DataService(LiveBeanRepository liveBeanRepository, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
         this.poXiaoFootBallTeamRepository = poXiaoFootBallTeamRepository;
         this.poXiaoBasketBallTeamRepository = poXiaoBasketBallTeamRepository;
+        this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
         this.liveBeanRepository = liveBeanRepository;
         this.config = config;
         this.netService = netService;
@@ -98,22 +101,28 @@ public class DataService {
         LiveItem liveItem = new LiveItem();
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO leftTeam = pxzjBean.getTeam().get(0);
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO rightTeam = pxzjBean.getTeam().get(1);
-        PoXiaoZiJieFootBallTeamBean.Result leftTeamDetail = poXiaoFootBallTeamRepository.findById(leftTeam.getTeamId()).get();
-        PoXiaoZiJieFootBallTeamBean.Result rightTeamDetail = poXiaoFootBallTeamRepository.findById(rightTeam.getTeamId()).get();
+        PoXiaoZiJieFootBallTeamBean.Result leftTeamDetail = null;
+        PoXiaoZiJieFootBallTeamBean.Result rightTeamDetail = null;
+        try {
+            leftTeamDetail = poXiaoFootBallTeamRepository.findById(leftTeam.getTeamId()).get();
+            rightTeamDetail = poXiaoFootBallTeamRepository.findById(rightTeam.getTeamId()).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
         liveItem.setLeftImg(leftTeamDetail.getPic());
         liveItem.setRightImg(rightTeamDetail.getPic());
-
-
         liveItem.setLeftName(leftTeamDetail.getName_zh());
         liveItem.setRightName(rightTeamDetail.getName_zh());
         liveItem.setIsTop(false);
         liveItem.setLiveType(1);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveId(String.valueOf(leftTeam.getTeamId()) + rightTeam.getTeamId() + pxzjBean.getMatchStartTime());
-        liveItem.setLiveStatus(pxzjBean.getHasStream() == 2);
-
+        liveItem.setLiveStatus(pxzjBean.getStatus());
+        liveItem.setMatchId(Long.valueOf(pxzjBean.getId()));
         liveItem.setLongTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setLiveing(getLiveing(Long.valueOf(pxzjBean.getId())));
         return liveItem;
     }
 
@@ -121,8 +130,15 @@ public class DataService {
         LiveItem liveItem = new LiveItem();
         PoXiaoZiJieBasketBallBean.ResultDTO.TeamDTO leftTeam = pxzjBean.getTeam().get(0);
         PoXiaoZiJieBasketBallBean.ResultDTO.TeamDTO rightTeam = pxzjBean.getTeam().get(1);
-        PoXiaoZiJieBasketBallTeamBean.Result leftTeamDetail = poXiaoBasketBallTeamRepository.findById(leftTeam.getTeamId()).get();
-        PoXiaoZiJieBasketBallTeamBean.Result rightTeamDetail = poXiaoBasketBallTeamRepository.findById(rightTeam.getTeamId()).get();
+        PoXiaoZiJieBasketBallTeamBean.Result leftTeamDetail = null;
+        PoXiaoZiJieBasketBallTeamBean.Result rightTeamDetail = null;
+        try {
+            leftTeamDetail = poXiaoBasketBallTeamRepository.findById(leftTeam.getTeamId()).get();
+            rightTeamDetail = poXiaoBasketBallTeamRepository.findById(rightTeam.getTeamId()).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
         liveItem.setLeftImg(leftTeamDetail.getPic());
         liveItem.setRightImg(rightTeamDetail.getPic());
         liveItem.setLeftName(leftTeamDetail.getName_zh());
@@ -131,10 +147,16 @@ public class DataService {
         liveItem.setLiveType(2);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveId(String.valueOf(leftTeam.getTeamId()) + rightTeam.getTeamId() + pxzjBean.getMatchStartTime());
-        liveItem.setLiveStatus(pxzjBean.getHasStream() == 2);
-
+        liveItem.setLiveStatus(pxzjBean.getHasStream());
+        liveItem.setMatchId(Long.valueOf(pxzjBean.getId()));
         liveItem.setLongTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setLiveing(getLiveing(Long.valueOf(pxzjBean.getId())));
         return liveItem;
+    }
+
+    boolean getLiveing(Long matchId) {
+        // 更新直播状态
+        return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
     }
 
     LiveItem tripartiteLiveBeanToLiveBean(AbcBean.Data abcData) {
@@ -148,7 +170,7 @@ public class DataService {
         item.setLiveType(abcData.getSportId() == 1 ? 2 : abcData.getSportId() == 3 ? 3 : abcData.getSportId());
         item.setLiveSource("abcData");
         item.setLiveId(abcData.getHomeTeamName() + abcData.getAwayTeamName() + abcData.getDataCreateTime());
-        item.setLiveStatus(abcData.getIsVisible() == 1);
+        item.setLiveStatus(abcData.getIsVisible());
         try {
             item.setLongTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(abcData.getCreateTime()).getTime());
         } catch (ParseException e) {
@@ -167,41 +189,73 @@ public class DataService {
         }
 //        requestAcbData();
 
-        requestPoXiaoZiJie();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+        long start_time_after = 0;
+        try {
+            start_time_after = simpleDateFormat.parse(date).getTime() / 1000;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        requestPoXiaoZiJieFootBall(start_time_after);
+        requestPoXiaoZiJieBasketBall(start_time_after);
         deleteOldItem();
 
     }
 
-    private void requestPoXiaoZiJie() {
-        PoXiaoZiJieFootBallBean poXiaoZiJieFootBallBean;
-        PoXiaoZiJieBasketBallBean poXiaoZiJieBasketBallBean;
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
-            long begin_time = simpleDateFormat.parse(date).getTime() / 1000;
-            Call<PoXiaoZiJieFootBallBean> footBallMatch = poXiaoZijieNetInterface.getFootBallMatch(System.currentTimeMillis() / 1000, begin_time);
-            Call<PoXiaoZiJieBasketBallBean> basketBallMatch = poXiaoZijieNetInterface.getBasketBallMatch(System.currentTimeMillis() / 1000, begin_time);
-            poXiaoZiJieFootBallBean = footBallMatch.execute().body();
-            poXiaoZiJieBasketBallBean = basketBallMatch.execute().body();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        for (PoXiaoZiJieFootBallBean.ResultDTO resultDTO : poXiaoZiJieFootBallBean.getResult()) {
-            LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
-            if (netItem != null) {
-                updateItem(netItem);
-            }
-        }
+    private void requestPoXiaoZiJieBasketBall(long start_time_after) {
+        int startId = 0;
 
-        for (PoXiaoZiJieBasketBallBean.ResultDTO resultDTO : poXiaoZiJieBasketBallBean.getResult()) {
-            LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
-            if (netItem != null) {
-                updateItem(netItem);
+        while (true) {
+            PoXiaoZiJieBasketBallBean poXiaoZiJieBasketBallBean;
+            Call<PoXiaoZiJieBasketBallBean> basketBallMatch = poXiaoZijieNetInterface.getBasketBallMatch(System.currentTimeMillis() / 1000, startId, start_time_after);
+            try {
+                poXiaoZiJieBasketBallBean = basketBallMatch.execute().body();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+
+            for (PoXiaoZiJieBasketBallBean.ResultDTO resultDTO : poXiaoZiJieBasketBallBean.getResult()) {
+                LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
+
+                if (netItem != null) {
+                    updateItem(netItem);
+                }
+            }
+
+            if (poXiaoZiJieBasketBallBean.getResult().size() < 100) {
+                return;
+            }
+
+            startId = poXiaoZiJieBasketBallBean.getResult().get(poXiaoZiJieBasketBallBean.getResult().size() - 1).getId() + 1;
+        }
+    }
+
+    private void requestPoXiaoZiJieFootBall(long start_time_after) {
+        int startId = 0;
+
+        while (true) {
+            PoXiaoZiJieFootBallBean poXiaoZiJieFootBallBean;
+            try {
+                Call<PoXiaoZiJieFootBallBean> footBallMatch = poXiaoZijieNetInterface.getFootBallMatch(System.currentTimeMillis() / 1000, startId, start_time_after);
+                poXiaoZiJieFootBallBean = footBallMatch.execute().body();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            for (PoXiaoZiJieFootBallBean.ResultDTO resultDTO : poXiaoZiJieFootBallBean.getResult()) {
+                LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
+                if (netItem != null) {
+                    updateItem(netItem);
+                }
+            }
+
+            if (poXiaoZiJieFootBallBean.getResult().size() < 100) {
+                return;
+            }
+
+            startId = poXiaoZiJieFootBallBean.getResult().get(poXiaoZiJieFootBallBean.getResult().size() - 1).getId() + 1;
         }
     }
 
@@ -277,4 +331,77 @@ public class DataService {
         }
     }
 
+    private Long now() {
+        return System.currentTimeMillis() / 1000;
+    }
+
+    public void requestVideoData() {
+        long startid = 0;
+        while (true) {
+            Call<PoXiaoZiJieLiveInfoBean> realTimeVideo = poXiaoZijieNetInterface.getRealTimeVideo(now(), 1, startid, 100);
+            Response<PoXiaoZiJieLiveInfoBean> result;
+            try {
+                result = realTimeVideo.execute();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            PoXiaoZiJieLiveInfoBean body = result.body();
+
+            if (body == null || body.getResult() == null || body.getCode() == 10006) {
+                break;
+            }
+            for (PoXiaoZiJieLiveInfoBean.Result result1 : body.getResult()) {
+                result1.setOld(false);
+                poXiaoLiveInfoRepository.save(result1);
+
+                LiveItem byMatchId = liveBeanRepository.findByMatchId(result1.getMatch_id());
+                if (byMatchId != null) {
+                    byMatchId.setLiveing(true);
+                    liveBeanRepository.save(byMatchId);
+                }
+            }
+
+            if (body.getResult().size() < 100) {
+                break;
+            }
+
+            PoXiaoZiJieLiveInfoBean.Result result1 = body.getResult().get(body.getResult().size() - 1);
+            startid = result1.getMatch_id() + 1;
+        }
+
+        while (true) {
+            Call<PoXiaoZiJieLiveInfoBean> realTimeVideo = poXiaoZijieNetInterface.getRealTimeBasketballVideo(now(), 1, startid, 100);
+            Response<PoXiaoZiJieLiveInfoBean> result;
+            try {
+                result = realTimeVideo.execute();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            PoXiaoZiJieLiveInfoBean body = result.body();
+
+            if (body == null || body.getResult() == null || body.getCode() == 10006) {
+                break;
+            }
+            for (PoXiaoZiJieLiveInfoBean.Result result1 : body.getResult()) {
+                result1.setOld(false);
+                poXiaoLiveInfoRepository.save(result1);
+
+                LiveItem byMatchId = liveBeanRepository.findByMatchId(result1.getMatch_id());
+                if (byMatchId != null) {
+                    byMatchId.setLiveing(true);
+                    liveBeanRepository.save(byMatchId);
+                }
+            }
+
+            if (body.getResult().size() < 100) {
+                break;
+            }
+
+            PoXiaoZiJieLiveInfoBean.Result result1 = body.getResult().get(body.getResult().size() - 1);
+            startid = result1.getMatch_id() + 1;
+        }
+
+        poXiaoLiveInfoRepository.deleteAllByOld();
+        poXiaoLiveInfoRepository.setAllItemIsOld();
+    }
 }
