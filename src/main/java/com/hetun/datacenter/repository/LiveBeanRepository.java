@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Repository
-public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
+public interface LiveBeanRepository extends JpaRepository<LiveItem, Integer> {
     @Query(value = "select * from live_table  where live_type = :type order by is_top,long_time desc", nativeQuery = true)
     Page<LiveItem> findAllBySport(Pageable pageable, @Param("type") Integer type);
 
@@ -34,18 +34,21 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Long> {
     @Query(value = "select * from live_table  where live_id = :liveId order by is_top desc,long_time", nativeQuery = true)
     LiveItem findAllByLiveId(@Param("liveId") String liveId);
 
-//    @Query(value = "select * from live_table  where match_id = :match_id order by is_top desc,long_time", nativeQuery = true)
-    LiveItem findByMatchId(Long matchId);
+    @Query(value = "select * from live_table  where id = :matchId", nativeQuery = true)
+    LiveItem findByMatchId(@Param("matchId") Integer matchId);
 
     @Modifying
     @Query(value = "update live_table set is_old = true", nativeQuery = true)
     void setAllItemIsOld();
 
     @Modifying
-    @Query(value = "DELETE FROM live_table WHERE is_old=true", nativeQuery = true)
+    @Query(value = "DELETE FROM live_table WHERE is_old!=false", nativeQuery = true)
     void deleteAllByOld();
     @Query(value = "select * from live_table order by is_top desc,is_liveing desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
     LiveItem findByLiveId(String liveid);
+
+    @Query(value = "select * from live_table WHERE is_old=true", nativeQuery = true)
+    LiveItem findAllByLiveing();
 }

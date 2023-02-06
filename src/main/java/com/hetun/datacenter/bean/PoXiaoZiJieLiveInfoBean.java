@@ -55,7 +55,7 @@ public class PoXiaoZiJieLiveInfoBean {
     @Table(name = "live_info")
     public static class Result {
         @Id
-        private long match_id;
+        private Integer match_id;
         @JsonIgnore
         private Boolean isOld;
 
@@ -74,11 +74,11 @@ public class PoXiaoZiJieLiveInfoBean {
         )
         private List<LiveStreams> live_streams;
 
-        public long getMatch_id() {
+        public Integer getMatch_id() {
             return match_id;
         }
 
-        public void setMatch_id(long match_id) {
+        public void setMatch_id(Integer match_id) {
             this.match_id = match_id;
         }
 

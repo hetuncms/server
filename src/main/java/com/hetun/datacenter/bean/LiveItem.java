@@ -9,9 +9,8 @@ import jakarta.persistence.*;
 public class LiveItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private Integer id;
     private String liveId;
     private Integer liveType;
     private Integer liveStatus;
@@ -25,7 +24,6 @@ public class LiveItem {
     private String leftImg;
     private String rightImg;
     private String gameName;
-    private Long matchId;
 
     private Long upDataTime;
 
@@ -33,6 +31,17 @@ public class LiveItem {
     private Boolean isHot;
 
     private Boolean isOld;
+
+    private Integer hasOdds;
+
+    public Integer getHasOdds() {
+        return hasOdds;
+    }
+
+    public void setHasOdds(Integer hasOdds) {
+        this.hasOdds = hasOdds;
+    }
+
     @Column(nullable = false)
     private Boolean isLiveing;
 
@@ -95,11 +104,11 @@ public class LiveItem {
         this.liveSource = liveSource;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -190,13 +199,5 @@ public class LiveItem {
 
     public void setGameName(String gameName) {
         this.gameName = gameName;
-    }
-
-    public Long getMatchId() {
-        return matchId;
-    }
-
-    public void setMatchId(Long matchId) {
-        this.matchId = matchId;
     }
 }

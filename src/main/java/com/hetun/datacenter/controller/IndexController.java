@@ -3,6 +3,7 @@ package com.hetun.datacenter.controller;
 import com.hetun.datacenter.bean.LiveBean;
 import com.hetun.datacenter.bean.LiveItem;
 import com.hetun.datacenter.bean.PlayInfoBean;
+import com.hetun.datacenter.bean.RateOddsBean;
 import com.hetun.datacenter.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +23,18 @@ public class IndexController {
     }
 
     @GetMapping("getPlayInfo")
-    public PlayInfoBean getPlayInfo(@RequestParam("matchId") Long id){
+    public PlayInfoBean getPlayInfo(@RequestParam("matchId") Integer id){
         return indexService.getPlayInfo(id);
     }
+    @GetMapping("getFootballRateOdds")
+    public RateOddsBean getFootballRateOdds(@RequestParam("matchId") Integer id){
+        return indexService.getFootballRateOdds(id);
+    }
 
+    @GetMapping("getBasketballRateOdds")
+    public RateOddsBean getBasketballRateOdds(@RequestParam("matchId") Integer id){
+        return indexService.getBasketballRateOdds(id);
+    }
     @GetMapping("getLiveItem")
     public LiveItem getLiveItem(@RequestParam("liveId") Long liveId){
         return indexService.getLiveItem(liveId);

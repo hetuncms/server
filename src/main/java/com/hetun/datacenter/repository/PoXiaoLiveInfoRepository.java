@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Repository
-public interface PoXiaoLiveInfoRepository extends JpaRepository<PoXiaoZiJieLiveInfoBean.Result, Long> {
+public interface PoXiaoLiveInfoRepository extends JpaRepository<PoXiaoZiJieLiveInfoBean.Result, Integer> {
 
     @Query(value = "select * from live_info  where match_id = :matchId", nativeQuery = true)
-    PoXiaoZiJieLiveInfoBean.Result findByMatchId(@Param("matchId") Long matchId);
+    PoXiaoZiJieLiveInfoBean.Result findByMatchId(@Param("matchId") Integer matchId);
 
 
     @Modifying
@@ -23,4 +23,5 @@ public interface PoXiaoLiveInfoRepository extends JpaRepository<PoXiaoZiJieLiveI
     @Modifying
     @Query(value = "DELETE FROM live_info WHERE is_old=true", nativeQuery = true)
     void deleteAllByOld();
+
 }

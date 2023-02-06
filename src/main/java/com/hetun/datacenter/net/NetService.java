@@ -10,6 +10,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class NetService {
@@ -23,13 +24,18 @@ public class NetService {
                 .addConverterFactory(JacksonConverterFactory.create());
 
 
-        if (config.getUseProxy()) {
+        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+        okHttpBuilder.connectTimeout(30, TimeUnit.SECONDS);
 
+
+        if (config.getUseProxy()) {
             java.net.Proxy proxy = new Proxy(Proxy.Type.HTTP,  new InetSocketAddress("localhost", 10809));
-            OkHttpClient client = new OkHttpClient.Builder().proxy(proxy).build();
-            builder.client(client);
+            okHttpBuilder = okHttpBuilder.proxy(proxy);
         }
 
+        OkHttpClient build = okHttpBuilder.build();
+
+        builder.client(build);
         retrofit = builder
                 .baseUrl("http://google.com")
                 .build();

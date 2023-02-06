@@ -7,6 +7,7 @@ import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
+import com.hetun.datacenter.repository.RateOddsRepository;
 import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
 import com.hetun.datacenter.tools.DateUtils;
 import okhttp3.MediaType;
@@ -38,20 +39,21 @@ public class IndexService {
     private final PoXiaoLiveInfoRepository poXiaoLiveInfoRepository;
     private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
     private final NetInterface netInterface;
+    private final RateOddsRepository rateOddsRepository;
     Config config;
     NetService netService;
     @Autowired
     ResourceLoader resourceLoader;
 
     @Autowired
-    public IndexService(Config config, NetService netService, TripartiteLiveBeanRepository tripartiteLiveBeanRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
+    public IndexService(Config config, NetService netService, RateOddsRepository rateOddsRepository, TripartiteLiveBeanRepository tripartiteLiveBeanRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
         this.config = config;
         this.netService = netService;
         this.tripartiteLiveBeanRepository = tripartiteLiveBeanRepository;
         this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
+        this.rateOddsRepository = rateOddsRepository;
         this.liveBeanRepository = liveBeanRepository;
         netInterface = netService.getRetrofit().create(NetInterface.class);
-
         this.poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
     }
 
@@ -60,19 +62,29 @@ public class IndexService {
         return iframeAddress;
     }
 
+    boolean getLiveing(Integer matchId) {
+        // 更新直播状态
+        return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
+    }
+
     public LiveBean getIndex(String requstbody) {
         Integer liveType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
 
         Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
         PageRequest of = PageRequest.of(pager, 10);
         Page<LiveItem> all;
+
         if (liveType == 0) {
             all = liveBeanRepository.findAllUp(of);
         } else {
             all = liveBeanRepository.findAllBySportUp(of, liveType);
         }
+
         List<LiveItem> content = all.getContent();
 
+        for (LiveItem liveItem : content) {
+            liveItem.setLiveing(getLiveing(liveItem.getId()));
+        }
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
 
@@ -88,7 +100,7 @@ public class IndexService {
         return liveBean;
     }
 
-    public PlayInfoBean getPlayInfo(Long matchId) {
+    public PlayInfoBean getPlayInfo(Integer matchId) {
         PlayInfoBean playInfoBean = new PlayInfoBean();
         playInfoBean.setCode(20000);
 
@@ -179,6 +191,7 @@ public class IndexService {
         }
     }
 
+
     public String getIframeLinkById(String id) {
         return config.getLocalAddress() + "live/" + id;
     }
@@ -199,4 +212,36 @@ public class IndexService {
         liveBeanRepository.save(liveItem);
         return new BaseBean.Builder().build();
     }
+
+    public RateOddsBean getFootballRateOdds(Integer matchId) {
+        RateOddsBean body = null;
+        try {
+            body = poXiaoZijieNetInterface.getOddsDetails(DateUtils.now(), 101, matchId).execute().body();
+            if (body != null && body.getResult() != null) {
+                for (RateOddsBean.Result result : body.getResult()) {
+                    rateOddsRepository.save(result);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return body;
+    }
+
+    public RateOddsBean getBasketballRateOdds(Integer matchId) {
+        RateOddsBean rateOddsBean = null;
+        try {
+            rateOddsBean = poXiaoZijieNetInterface.getOddsDetails(DateUtils.now(), 102, matchId).execute().body();
+            if (rateOddsBean != null && rateOddsBean.getResult() != null) {
+                for (RateOddsBean.Result result : rateOddsBean.getResult()) {
+                    rateOddsRepository.save(result);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return rateOddsBean;
+    }
+
+
 }

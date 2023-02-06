@@ -9,35 +9,38 @@ import retrofit2.http.Query;
 public interface PoXiaoZijieNetInterface {
     @GET("https://sports.dawnbyte.com/soccer/api/match")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieFootBallBean> getFootBallMatch(@Query("time_stamp") long time_stamp,@Query("begin_id") Integer begin_id,@Query("start_time_after") long start_time_after);
+    Call<PoXiaoZiJieFootBallBean> getFootBallMatch(@Query("time_stamp") Integer time_stamp,@Query("begin_id") Integer begin_id,@Query("start_time_after") long start_time_after);
 
     @GET("https://sports.dawnbyte.com/basketball/api/match")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieBasketBallBean> getBasketBallMatch(@Query("time_stamp") long time_stamp,@Query("begin_id") Integer begin_id,@Query("start_time_after") long begin_time);
+    Call<PoXiaoZiJieBasketBallBean> getBasketBallMatch(@Query("time_stamp") Integer time_stamp,@Query("begin_id") Integer begin_id,@Query("start_time_after") long begin_time);
 
     @GET("https://sports.dawnbyte.com/soccer/api/team")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieFootBallTeamBean> getFootBallTeams(@Query("time_stamp") long time_stamp, @Query("begin_id") Integer beginId);
+    Call<PoXiaoZiJieFootBallTeamBean> getFootBallTeams(@Query("time_stamp") Integer time_stamp, @Query("begin_id") Integer beginId);
 
 
     @GET("https://sports.dawnbyte.com/basketball/api/team")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieBasketBallTeamBean> getBasketBallTeams(@Query("time_stamp") Long time_stamp, @Query("begin_id") Integer beginId);
+    Call<PoXiaoZiJieBasketBallTeamBean> getBasketBallTeams(@Query("time_stamp") Integer time_stamp, @Query("begin_id") Integer beginId);
 
     @GET("https://sports.dawnbyte.com/soccer/api/live/video")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieLiveInfoBean> getRealTimeFootballVideoOne(@Query("time_stamp") Long time_stamp,@Query("begin_id") Long begin_id,@Query("limit") Integer limit);
+    Call<PoXiaoZiJieLiveInfoBean> getRealTimeFootballVideoOne(@Query("time_stamp") Integer time_stamp,@Query("begin_id") Integer begin_id,@Query("limit") Integer limit);
 
     @GET("https://sports.dawnbyte.com/basketball/api/live/video")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieLiveInfoBean> getRealTimeBasketballVideoOne(@Query("time_stamp") Long time_stamp,@Query("begin_id") Long begin_id,@Query("limit") Integer limit);
+    Call<PoXiaoZiJieLiveInfoBean> getRealTimeBasketballVideoOne(@Query("time_stamp") Integer time_stamp,@Query("begin_id") Integer begin_id,@Query("limit") Integer limit);
 
     @GET("https://sports.dawnbyte.com/soccer/api/live/video")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieLiveInfoBean> getRealTimeVideo(@Query("time_stamp") Long time_stamp,@Query("is_streaming") Integer is_streaming,@Query("begin_id") Long begin_id,@Query("limit") int limit);
+    Call<PoXiaoZiJieLiveInfoBean> getRealTimeVideo(@Query("time_stamp") Integer time_stamp,@Query("is_streaming") Integer is_streaming,@Query("begin_id") Integer begin_id,@Query("limit") int limit);
 
     @GET("https://sports.dawnbyte.com/basketball/api/live/video")
     @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
-    Call<PoXiaoZiJieLiveInfoBean> getRealTimeBasketballVideo(@Query("time_stamp") Long time_stamp,@Query("is_streaming") Integer is_streaming,@Query("begin_id") Long begin_id,@Query("limit") int limit);
+    Call<PoXiaoZiJieLiveInfoBean> getRealTimeBasketballVideo(@Query("time_stamp") Integer time_stamp,@Query("is_streaming") Integer is_streaming,@Query("begin_id") Integer begin_id,@Query("limit") int limit);
 
+    @GET("https://sports.dawnbyte.com/rate/api/odds/details")
+    @Headers("token:s08cEJ61gYE4VZqolo3S02c6v1Ne9F7ZKv1eR5mqn6Rhw5VLfo")
+    Call<RateOddsBean> getOddsDetails(@Query("time_stamp") Integer time_stamp,@Query("sport_id") Integer sportId,@Query("match_id") Integer matchId);
 }
