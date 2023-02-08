@@ -1,15 +1,23 @@
 package com.hetun.datacenter.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hetun.datacenter.bean.WssBean;
+import com.hetun.datacenter.service.BallTeamService;
 import com.hetun.datacenter.service.IndexService;
 import jakarta.websocket.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FootballReadTimeHandler extends Endpoint  {
+public class FootballReadTimeHandler extends Endpoint {
     private final IndexService indexService;
-    public FootballReadTimeHandler(IndexService indexService) {
+    private final BallTeamService ballTeamService;
+
+    @Autowired
+    public FootballReadTimeHandler(IndexService indexService, BallTeamService ballTeamService) {
         this.indexService = indexService;
+        this.ballTeamService = ballTeamService;
     }
 
     @Override
@@ -18,6 +26,20 @@ public class FootballReadTimeHandler extends Endpoint  {
             @Override
             public void onMessage(String message) {
                 ObjectMapper objectMapper = new ObjectMapper();
+                WssBean wssBean;
+                try {
+                    wssBean = objectMapper.readValue(message, WssBean.class);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                if (wssBean.getType() == 101) {
+                    switch (wssBean.getAction_type()) {
+                        case 1:ballTeamService.addTeam(wssBean.getPayload());break;
+                        case 2:ballTeamService.updateTeam(wssBean.getPayload());break;
+                        case 3:ballTeamService.delTeam(wssBean.getPayload());break;
+                    }
+                }
+
             }
         });
     }
@@ -25,7 +47,7 @@ public class FootballReadTimeHandler extends Endpoint  {
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         super.onClose(session, closeReason);
-        System.out.println("MyWebSocketClient.onClose"+closeReason);
+        System.out.println("MyWebSocketClient.onClose" + closeReason);
     }
 
     @Override

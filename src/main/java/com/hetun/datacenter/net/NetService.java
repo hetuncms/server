@@ -1,6 +1,7 @@
 package com.hetun.datacenter.net;
 
 import com.hetun.datacenter.Config;
+import com.hetun.datacenter.tripartite.net.ArgsInfoInterceptor;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class NetService {
         okHttpBuilder.connectTimeout(30, TimeUnit.SECONDS);
 
 
+        okHttpBuilder.addInterceptor(new ArgsInfoInterceptor());
         if (config.getUseProxy()) {
             java.net.Proxy proxy = new Proxy(Proxy.Type.HTTP,  new InetSocketAddress("localhost", 10809));
             okHttpBuilder = okHttpBuilder.proxy(proxy);
@@ -37,7 +39,7 @@ public class NetService {
 
         builder.client(build);
         retrofit = builder
-                .baseUrl("http://google.com")
+                .baseUrl("https://sports.dawnbyte.com/")
                 .build();
     }
 

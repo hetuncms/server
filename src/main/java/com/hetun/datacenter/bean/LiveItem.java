@@ -1,11 +1,14 @@
 package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "live_table")
-@JsonIgnoreProperties(value = {"liveSource", "old", "hot", "upDataTime", "upDataCount"})
+@JsonIgnoreProperties(value = {"liveSource", "old", "hot", "upDataTime", "upDataCount", "leagueId"})
 public class LiveItem {
 
     @Id
@@ -14,7 +17,7 @@ public class LiveItem {
     private String liveId;
     private Integer liveType;
     private Integer liveStatus;
-
+    private Integer leagueId;
     private String liveSource;
     private String title;
     private Long longTime;
@@ -24,15 +27,24 @@ public class LiveItem {
     private String leftImg;
     private String rightImg;
     private String gameName;
-
     private Long upDataTime;
-
     private Long upDataCount;
     private Boolean isHot;
-
     private Boolean isOld;
-
     private Integer hasOdds;
+    @Column(nullable = false)
+    private Boolean isLiveing;
+
+    public LiveItem() {
+    }
+
+    public Integer getLeagueId() {
+        return leagueId;
+    }
+
+    public void setLeagueId(Integer leagueId) {
+        this.leagueId = leagueId;
+    }
 
     public Integer getHasOdds() {
         return hasOdds;
@@ -40,12 +52,6 @@ public class LiveItem {
 
     public void setHasOdds(Integer hasOdds) {
         this.hasOdds = hasOdds;
-    }
-
-    @Column(nullable = false)
-    private Boolean isLiveing;
-
-    public LiveItem() {
     }
 
     public Boolean getTop() {

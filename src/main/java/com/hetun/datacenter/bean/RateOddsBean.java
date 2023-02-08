@@ -4,6 +4,7 @@
 package com.hetun.datacenter.bean;
 
 import com.vladmihalcea.hibernate.type.json.JsonType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -64,6 +65,7 @@ public class RateOddsBean {
         private int sport_id;
         private long match_id;
         private int type;
+        @Column(columnDefinition = "text")
         @Type(value = JsonType.class)
         private List<OddsItem> list;
 
@@ -109,8 +111,27 @@ public class RateOddsBean {
         }
 
         public static class OddsItem {
+            private int id;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
 
             private int company_id;
+            private String companyName;
+
+            public String getCompanyName() {
+                return companyName;
+            }
+
+            public void setCompanyName(String companyName) {
+                this.companyName = companyName;
+            }
+
             private int market_status;
             private List<Integer> score;
             private String point;

@@ -39,11 +39,11 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Integer> {
 
     @Modifying
     @Query(value = "update live_table set is_old = true", nativeQuery = true)
-    void setAllItemIsOld();
+    Integer setAllItemIsOld();
 
     @Modifying
     @Query(value = "DELETE FROM live_table WHERE is_old!=false", nativeQuery = true)
-    void deleteAllByOld();
+    Integer deleteAllByOld();
     @Query(value = "select * from live_table order by is_top desc,is_liveing desc,long_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
