@@ -547,7 +547,7 @@ public class MainLiveBean {
             setLongTime(new SimpleDateFormat("yyyy-MM-dd HH:mm")
                     .parse(Calendar.getInstance().get(1) + "-" + time).getTime());
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         this.time = time;
     }

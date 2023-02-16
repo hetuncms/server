@@ -9,12 +9,13 @@ import com.hetun.datacenter.repository.RateOddsRepository;
 import com.hetun.datacenter.tripartite.bean.RateOddsCompanyBean;
 import com.hetun.datacenter.tripartite.net.PoXiaoRateOddsNetInterface;
 import com.hetun.datacenter.tripartite.repository.RateOddsCompanyRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,68 +25,94 @@ public class RateOddsService {
     private final RateOddsRepository rateOddsRepository;
     private final PoXiaoRateOddsNetInterface PoXiaoRateOddsNetInterface;
     private final RateOddsCompanyRepository rateOddsCompanyRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
     ObjectMapper objectMapper = new ObjectMapper();
 
-    public RateOddsService(RateOddsRepository rateOddsRepository, NetService netService, RateOddsCompanyRepository rateOddsCompanyRepository) {
+    public RateOddsService(RateOddsRepository rateOddsRepository, NetService netService, SimpMessagingTemplate simpMessagingTemplate, RateOddsCompanyRepository rateOddsCompanyRepository) {
         this.rateOddsRepository = rateOddsRepository;
         this.rateOddsCompanyRepository = rateOddsCompanyRepository;
-
+        this.simpMessagingTemplate = simpMessagingTemplate;
         this.poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
         this.PoXiaoRateOddsNetInterface = netService.getRetrofit().create(PoXiaoRateOddsNetInterface.class);
     }
 
+    private void requestFootballNetRateOdds(int matchId) {
+        Call<RateOddsBean> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(101, matchId);
+        RateOddsBean body = null;
+        try {
+            body = oddsDetails.execute().body();
+        } catch (IOException e) {
+           e.printStackTrace();
+        }
+        if (body.getResult() != null) {
+            rateOddsRepository.saveAll(body.getResult());
+        } else if (body.getCode() == 10004) {
+            System.out.println("requestNetRateOdds:" + body.getMessage());
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            requestFootballNetRateOdds(matchId);
+        }
+    }
 
     public List<RateOddsBean.Result> saveFootballRateOdds(Integer matchId) {
 
-        List<RateOddsBean.Result> resultSql = rateOddsRepository.findAllByMatchId(matchId);
+        List<RateOddsBean.Result> resultSql = getRateOdds(matchId);
         if (resultSql != null && !resultSql.isEmpty()) {
             return resultSql;
+        } else {
+            requestFootballNetRateOdds(matchId);
         }
-        poXiaoZijieNetInterface.getOddsDetails(101, matchId).enqueue(new Callback<RateOddsBean>() {
-            @Override
-            public void onResponse(Call<RateOddsBean> call, Response<RateOddsBean> response) {
-                RateOddsBean body = response.body();
-                if (body != null && body.getResult() != null) {
-                    for (RateOddsBean.Result result : body.getResult()) {
-                        rateOddsRepository.save(result);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<RateOddsBean> call, Throwable t) {
-                System.out.println("RateOddsService.saveFootballRateOdds.onFailure");
-                t.printStackTrace();
-            }
-        });
         return null;
-
     }
 
-    public RateOddsBean saveBasketballRateOdds(Integer matchId) {
+    private void requestBasketballRateOdds(int matchId) {
+        Call<RateOddsBean> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(102, matchId);
         RateOddsBean rateOddsBean = null;
         try {
-            rateOddsBean = poXiaoZijieNetInterface.getOddsDetails(102, matchId).execute().body();
-            if (rateOddsBean != null && rateOddsBean.getResult() != null) {
-                for (RateOddsBean.Result result : rateOddsBean.getResult()) {
-                    rateOddsRepository.save(result);
-                }
-            }
+            rateOddsBean = oddsDetails.execute().body();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return rateOddsBean;
+        if (rateOddsBean.getCode() == 10004) {
+            System.out.println("saveBasketballRateOdds=" + "重试！！！！！！！！！");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            requestBasketballRateOdds( matchId);
+        } else if (rateOddsBean != null && rateOddsBean.getResult() != null) {
+            for (RateOddsBean.Result result : rateOddsBean.getResult()) {
+                rateOddsRepository.save(result);
+            }
+        }
+    }
+
+    public List<RateOddsBean.Result> saveBasketballRateOdds(final Integer matchId) {
+        List<RateOddsBean.Result> resultSql = getRateOdds(matchId);
+        if (resultSql != null && !resultSql.isEmpty()) {
+            return resultSql;
+        } else {
+            requestBasketballRateOdds(matchId);
+        }
+        return resultSql;
     }
 
 
     public void handlerOuYa(String payload) {
         try {
             RateOddsBean.Result.OddsItem wssRateOddsBean = objectMapper.readValue(payload, RateOddsBean.Result.OddsItem.class);
-            Optional<RateOddsBean.Result> byId = rateOddsRepository.findById(wssRateOddsBean.getId());
-            boolean empty = byId.isEmpty();
+            Optional<RateOddsBean.Result> rateOddsBean = rateOddsRepository.findById(wssRateOddsBean.getId());
+            boolean empty = rateOddsBean.isEmpty();
 
             if (!empty) {
-                for (RateOddsBean.Result.OddsItem oddsItem : byId.get().getList()) {
+                RateOddsBean.Result result = rateOddsBean.get();
+                for (RateOddsBean.Result.OddsItem oddsItem : result.getList()) {
+
+
                     if (oddsItem.getCompany_id() == wssRateOddsBean.getCompany_id()) {
                         oddsItem.setOption(wssRateOddsBean.getOption());
                         oddsItem.setScore(wssRateOddsBean.getScore());
@@ -93,9 +120,23 @@ public class RateOddsService {
                         oddsItem.setMarket_status(wssRateOddsBean.getMarket_status());
                     }
                 }
-            }
+                rateOddsRepository.save(result);
 
+                final RateOddsBean.Result finalSendResult = result;
+                Optional<RateOddsBean.Result.OddsItem> first = finalSendResult.getList().stream().filter(oddsItem -> oddsItem.getCompany_id() == 1).findFirst();
+                if (first.isEmpty()) {
+                    return;
+                }
+
+                RateOddsBean.Result.OddsItem oddsItem1 = first.get();
+                ArrayList<RateOddsBean.Result.OddsItem> oddsItemArrays = new ArrayList<>();
+                oddsItemArrays.add(oddsItem1);
+                finalSendResult.setList(oddsItemArrays);
+                simpMessagingTemplate.convertAndSend("/topic/rate_odds", result);
+            }
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -107,14 +148,26 @@ public class RateOddsService {
 
     public void getRateCompanyInfo() {
         try {
-            RateOddsCompanyBean body = PoXiaoRateOddsNetInterface.getRateCompany(101).execute().body();
-            List<RateOddsCompanyBean.Result> result = body.getResult();
-            for (RateOddsCompanyBean.Result item : result) {
-                rateOddsCompanyRepository.save(item);
-            }
+            Response<RateOddsCompanyBean> execute = PoXiaoRateOddsNetInterface.getRateCompany(101).execute();
+            RateOddsCompanyBean soccer = execute.body();
+            assert soccer != null;
+            List<RateOddsCompanyBean.Result> result = soccer.getResult();
+            rateOddsCompanyRepository.saveAll(result);
+            RateOddsCompanyBean basketBall = PoXiaoRateOddsNetInterface.getRateCompany(102).execute().body();
+            assert basketBall != null;
+            List<RateOddsCompanyBean.Result> basketBallList = basketBall.getResult();
+            rateOddsCompanyRepository.saveAll(basketBallList);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void handlerOuYaFootball(String payload) {
+        handlerOuYa(payload);
+    }
+
+    public void handlerOuYaBasketball(String payload) {
+        handlerOuYa(payload);
     }
 }

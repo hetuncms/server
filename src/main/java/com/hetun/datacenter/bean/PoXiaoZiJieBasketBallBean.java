@@ -1,16 +1,18 @@
 package com.hetun.datacenter.bean;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 public class PoXiaoZiJieBasketBallBean {
+
     @JsonProperty("code")
     private Integer code;
     @JsonProperty("message")
     private String message;
     @JsonProperty("result")
-    private List<ResultDTO> result;
+    private List<Result> result;
     @JsonProperty("time_stamp")
     private Integer timeStamp;
 
@@ -30,11 +32,11 @@ public class PoXiaoZiJieBasketBallBean {
         this.message = message;
     }
 
-    public List<ResultDTO> getResult() {
+    public List<Result> getResult() {
         return result;
     }
 
-    public void setResult(List<ResultDTO> result) {
+    public void setResult(List<Result> result) {
         this.result = result;
     }
 
@@ -46,13 +48,13 @@ public class PoXiaoZiJieBasketBallBean {
         this.timeStamp = timeStamp;
     }
 
-    public static class ResultDTO {
+    public static class Result {
         @JsonProperty("id")
         private Integer id;
         @JsonProperty("league_id")
         private Integer leagueId;
         @JsonProperty("season_id")
-        private Integer seasonId;
+        private Object seasonId;
         @JsonProperty("type")
         private Object type;
         @JsonProperty("arena_en")
@@ -74,7 +76,7 @@ public class PoXiaoZiJieBasketBallBean {
         @JsonProperty("has_animation")
         private Integer hasAnimation;
         @JsonProperty("team")
-        private List<TeamDTO> team;
+        private List<Team> team;
 
         public Integer getId() {
             return id;
@@ -92,11 +94,11 @@ public class PoXiaoZiJieBasketBallBean {
             this.leagueId = leagueId;
         }
 
-        public Integer getSeasonId() {
+        public Object getSeasonId() {
             return seasonId;
         }
 
-        public void setSeasonId(Integer seasonId) {
+        public void setSeasonId(Object seasonId) {
             this.seasonId = seasonId;
         }
 
@@ -180,15 +182,15 @@ public class PoXiaoZiJieBasketBallBean {
             this.hasAnimation = hasAnimation;
         }
 
-        public List<TeamDTO> getTeam() {
+        public List<Team> getTeam() {
             return team;
         }
 
-        public void setTeam(List<TeamDTO> team) {
+        public void setTeam(List<Team> team) {
             this.team = team;
         }
 
-        public static class TeamDTO {
+        public static class Team {
             @JsonProperty("team_id")
             private Integer teamId;
             @JsonProperty("is_home")

@@ -3,6 +3,7 @@
  */
 package com.hetun.datacenter.bean;
 
+import com.hetun.datacenter.tripartite.bean.BaseNetBean;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author bejson.com (i@bejson.com)
  * @website http://www.bejson.com/java2pojo/
  */
-public class RateOddsBean {
+public class RateOddsBean extends BaseNetBean{
 
     private int code;
     private String message;

@@ -1,10 +1,14 @@
 package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Type;
+
+import java.util.List;
 
 @Entity
 @Table(name = "live_table")
@@ -20,8 +24,8 @@ public class LiveItem {
     private Integer leagueId;
     private String liveSource;
     private String title;
-    private Long longTime;
-    private Boolean isTop;
+    private Long matchStartTime;
+    private boolean isTop;
     private String leftName;
     private String rightName;
     private String leftImg;
@@ -29,13 +33,73 @@ public class LiveItem {
     private String gameName;
     private Long upDataTime;
     private Long upDataCount;
-    private Boolean isHot;
-    private Boolean isOld;
+    private boolean isHot;
+    private boolean isOld;
     private Integer hasOdds;
+    @Column(columnDefinition = "text")
+    @Type(JsonType.class)
+    private List<Integer> visitingScore;
+    @Column(columnDefinition = "text")
+    @Type(JsonType.class)
+    private List<Integer> mainScore;
     @Column(nullable = false)
-    private Boolean isLiveing;
+    private boolean isLiveing;
+    @Column(columnDefinition = "text")
+    @Type(JsonType.class)
+    private List<Integer> leftTeamScore;
+    @Column(columnDefinition = "text")
+    @Type(JsonType.class)
+    private List<Integer> rightTeamScore;
+
+    public List<Integer> getMainScore() {
+        return mainScore;
+    }
+
+    public void setMainScore(List<Integer> mainScore) {
+        this.mainScore = mainScore;
+    }
+
+    public List<Integer> getVisitingScore() {
+        return visitingScore;
+    }
+
+    public void setVisitingScore(List<Integer> visitingScore) {
+        this.visitingScore = visitingScore;
+    }
 
     public LiveItem() {
+    }
+
+    public boolean isTop() {
+        return isTop;
+    }
+
+    public boolean isHot() {
+        return isHot;
+    }
+
+    public boolean isOld() {
+        return isOld;
+    }
+
+    public boolean isLiveing() {
+        return isLiveing;
+    }
+
+    public List<Integer> getLeftTeamScore() {
+        return leftTeamScore;
+    }
+
+    public void setLeftTeamScore(List<Integer> leftTeamScore) {
+        this.leftTeamScore = leftTeamScore;
+    }
+
+    public List<Integer> getRightTeamScore() {
+        return rightTeamScore;
+    }
+
+    public void setRightTeamScore(List<Integer> rightTeamScore) {
+        this.rightTeamScore = rightTeamScore;
     }
 
     public Integer getLeagueId() {
@@ -54,35 +118,35 @@ public class LiveItem {
         this.hasOdds = hasOdds;
     }
 
-    public Boolean getTop() {
+    public boolean getTop() {
         return isTop;
     }
 
-    public void setTop(Boolean top) {
+    public void setTop(boolean top) {
         isTop = top;
     }
 
-    public Boolean getLiveing() {
+    public boolean getLiveing() {
         return isLiveing;
     }
 
-    public void setLiveing(Boolean liveing) {
+    public void setLiveing(boolean liveing) {
         isLiveing = liveing;
     }
 
-    public Boolean getOld() {
+    public boolean getOld() {
         return isOld;
     }
 
-    public void setOld(Boolean old) {
+    public void setOld(boolean old) {
         isOld = old;
     }
 
-    public Boolean getHot() {
+    public boolean getHot() {
         return isHot;
     }
 
-    public void setHot(Boolean hot) {
+    public void setHot(boolean hot) {
         isHot = hot;
     }
 
@@ -142,20 +206,20 @@ public class LiveItem {
         this.title = title;
     }
 
-    public Long getLongTime() {
-        return longTime;
+    public Long getMatchStartTime() {
+        return matchStartTime;
     }
 
-    public void setLongTime(Long longTime) {
-        this.longTime = longTime;
+    public void setMatchStartTime(Long longTime) {
+        this.matchStartTime = longTime;
     }
 
-    public Boolean getIsTop() {
+    public boolean getIsTop() {
         return isTop;
     }
 
 
-    public void setIsTop(Boolean top) {
+    public void setIsTop(boolean top) {
         isTop = top;
     }
 

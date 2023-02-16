@@ -1,6 +1,6 @@
 package com.hetun.datacenter.service;
 
-import com.hetun.datacenter.tripartite.FootballService;
+import com.hetun.datacenter.tripartite.service.FootballService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -17,8 +17,10 @@ public class ScheduleService {
     DataService dataService;
 
 
-    @Value("${app.teamupdate}")
+    @Value("${app.teamUpdate}")
     public Boolean teamUpdate;
+    @Value("${app.leagueUpdate}")
+    public Boolean leagueUpdate;
     @Autowired
     public ScheduleService(DataService dataService, BallTeamService ballTeamService, FootballService footballService,RateOddsService rateOddsService) {
         this.dataService = dataService;
@@ -50,11 +52,13 @@ public class ScheduleService {
     @Async
     @Scheduled(fixedRate = 3,timeUnit = TimeUnit.DAYS)
     public void scheduleLeague(){
-        footballService.requestLeague();
+        if (leagueUpdate) {
+            footballService.requestLeague();
+        }
     }
 
     @Async
-    @Scheduled(fixedRate = 7,timeUnit = TimeUnit.DAYS)
+    @Scheduled(fixedRate = 3,timeUnit = TimeUnit.DAYS)
     public void scheduleRateCompanyInfo(){
         rateOddsService.getRateCompanyInfo();
     }

@@ -1,15 +1,15 @@
 package com.hetun.datacenter.bean;
 
-import com.hetun.datacenter.tripartite.bean.FootballLeagueBean;
+import com.hetun.datacenter.tripartite.bean.LeagueBean;
 
 public class FootballPlayInfoBean extends PlayInfoBean{
-    private FootballLeagueBean.Result footballLeague;
+    private LeagueBean.Result footballLeague;
 
-    public FootballLeagueBean.Result getFootballLeague() {
+    public LeagueBean.Result getFootballLeague() {
         return footballLeague;
     }
 
-    public void setFootballLeague(FootballLeagueBean.Result footballLeague) {
+    public void setFootballLeague(LeagueBean.Result footballLeague) {
         this.footballLeague = footballLeague;
     }
 }

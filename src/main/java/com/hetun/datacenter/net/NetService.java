@@ -28,7 +28,6 @@ public class NetService {
         OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
         okHttpBuilder.connectTimeout(30, TimeUnit.SECONDS);
 
-
         okHttpBuilder.addInterceptor(new ArgsInfoInterceptor());
         if (config.getUseProxy()) {
             java.net.Proxy proxy = new Proxy(Proxy.Type.HTTP,  new InetSocketAddress("localhost", 10809));

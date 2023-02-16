@@ -12,13 +12,7 @@ import org.hibernate.annotations.Type;
 
 import java.util.List;
 
-/**
- * Auto-generated: 2023-02-09 0:52:48
- *
- * @author bejson.com (i@bejson.com)
- * @website http://www.bejson.com/java2pojo/
- */
-    public class FootballLeagueBean {
+public class LeagueBean {
 
     private int code;
     private String message;

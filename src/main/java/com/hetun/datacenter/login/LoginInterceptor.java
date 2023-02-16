@@ -35,7 +35,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         if (JWTUtils.verify(token) == null) {
-            throw new RuntimeException();
+            return false;
         } else {
             return true;
         }

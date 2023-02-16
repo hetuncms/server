@@ -8,8 +8,7 @@ import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
 import com.hetun.datacenter.repository.RateOddsRepository;
-import com.hetun.datacenter.repository.TripartiteLiveBeanRepository;
-import com.hetun.datacenter.tripartite.bean.FootballLeagueBean;
+import com.hetun.datacenter.tripartite.bean.LeagueBean;
 import com.hetun.datacenter.tripartite.bean.RateOddsCompanyBean;
 import com.hetun.datacenter.tripartite.repository.LeagueRepository;
 import com.hetun.datacenter.tripartite.repository.RateOddsCompanyRepository;
@@ -36,7 +35,6 @@ public class IndexService {
     public static final int PAGE_SIZE = 10;
     private static final MediaType JSON = MediaType.parse("application/x-www-form-urlencoded;");
     private static final String TEAM_IMG_NAME = "team_img";
-    private final TripartiteLiveBeanRepository tripartiteLiveBeanRepository;
     private final LiveBeanRepository liveBeanRepository;
     private final PoXiaoLiveInfoRepository poXiaoLiveInfoRepository;
     private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
@@ -51,12 +49,9 @@ public class IndexService {
     ResourceLoader resourceLoader;
 
     @Autowired
-    public IndexService(Config config, NetService netService, LeagueRepository leagueRepository, RateOddsService rateOddsService,
-                        RateOddsCompanyRepository rateOddsCompanyRepository,
-                        RateOddsRepository rateOddsRepository, TripartiteLiveBeanRepository tripartiteLiveBeanRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
+    public IndexService(Config config, NetService netService, LeagueRepository leagueRepository, RateOddsService rateOddsService, RateOddsCompanyRepository rateOddsCompanyRepository, RateOddsRepository rateOddsRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
         this.config = config;
         this.netService = netService;
-        this.tripartiteLiveBeanRepository = tripartiteLiveBeanRepository;
         this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
         this.rateOddsRepository = rateOddsRepository;
         this.rateOddsCompanyRepository = rateOddsCompanyRepository;
@@ -65,11 +60,6 @@ public class IndexService {
         this.rateOddsService = rateOddsService;
         netInterface = netService.getRetrofit().create(NetInterface.class);
         this.poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
-    }
-
-    private String toIframe(Integer id) {
-        String iframeAddress = config.getLocalAddress() + "live_cms/" + id;
-        return iframeAddress;
     }
 
     boolean getLiveing(Integer matchId) {
@@ -99,14 +89,6 @@ public class IndexService {
         liveBean.setLive_item(content);
 
 
-//        if (content != null) {
-//            content.forEach(item -> {
-//                String leftimg = downloadTeamImg(item.getLeftImg());
-//                String rightImg = downloadTeamImg(item.getRightImg());
-//                item.setLeftImg(leftimg);
-//                item.setRightImg(rightImg);
-//            });
-//        }
         return liveBean;
     }
 
@@ -116,26 +98,23 @@ public class IndexService {
 
         LiveItem liveItem = liveBeanRepository.findByMatchId(matchId);
 
-        Optional<FootballLeagueBean.Result> leagueOp = leagueRepository.findById(liveItem.getLeagueId());
+        Optional<LeagueBean.Result> leagueOp = leagueRepository.findById(liveItem.getLeagueId());
         if (leagueOp.isPresent()) {
-            FootballLeagueBean.Result footballLeague = leagueOp.get();
-            playInfoBean.setFootballLeague(footballLeague);
+            LeagueBean.Result league = leagueOp.get();
+            playInfoBean.setFootballLeague(league);
         }
 
         List<RateOddsBean.Result> rateOdds = rateOddsService.getRateOdds(matchId);
 
         if (rateOdds != null && !rateOdds.isEmpty()) {
-
             for (RateOddsBean.Result rateOdd : rateOdds) {
                 for (RateOddsBean.Result.OddsItem oddsItem : rateOdd.getList()) {
-                    Optional<RateOddsCompanyBean.Result> byId = rateOddsCompanyRepository.findById(oddsItem.getCompany_id());
-                    oddsItem.setCompanyName(byId.get().getName_zh());
+                    Optional<RateOddsCompanyBean.Result> rateOddsCompanyOptional = rateOddsCompanyRepository.findById(oddsItem.getCompany_id());
+                    rateOddsCompanyOptional.ifPresent(result -> oddsItem.setCompanyName(result.getName_zh()));
                 }
             }
             playInfoBean.setOddsItem(rateOdds);
         }
-
-
 
         Optional<PoXiaoZiJieLiveInfoBean.Result> byId1 = poXiaoLiveInfoRepository.findById(matchId);
 
@@ -163,9 +142,8 @@ public class IndexService {
 
             try {
                 staticDir = new File(getClass().getResource("/static/" + TEAM_IMG_NAME).toURI());
-            } catch (NullPointerException e) {
             } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
 
             if (staticDir == null) {
@@ -189,8 +167,9 @@ public class IndexService {
 
             return config.getLocalAddress() + TEAM_IMG_NAME + "/" + fileName;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return img;
     }
 
 

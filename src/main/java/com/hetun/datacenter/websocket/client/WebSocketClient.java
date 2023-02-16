@@ -1,4 +1,4 @@
-package com.hetun.datacenter.websocket;
+package com.hetun.datacenter.websocket.client;
 
 import jakarta.websocket.*;
 
@@ -14,7 +14,6 @@ public class WebSocketClient extends Endpoint {
     @Override
     public void onError(Session session, Throwable throwable) {
         super.onError(session, throwable);
-
     }
 
     @Override

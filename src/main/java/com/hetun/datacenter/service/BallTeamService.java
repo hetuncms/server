@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import retrofit2.Call;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class BallTeamService {
@@ -87,7 +88,7 @@ public class BallTeamService {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
                 continue;
             } else if (body.getCode() != 0) {
@@ -122,5 +123,62 @@ public class BallTeamService {
 
     public void delTeam(String payload) {
         System.out.println("BallTeamService.delTeam");
+    }
+
+    public PoXiaoZiJieBasketBallTeamBean.Result getBasketBallTeam(Integer teamId) {
+        Call<PoXiaoZiJieBasketBallTeamBean> teams = poXiaoZijieNetInterface.getBasketBallTeam(teamId, 1);
+        PoXiaoZiJieBasketBallTeamBean body = null;
+
+        try {
+            body = teams.execute().body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (body != null) {
+            List<PoXiaoZiJieBasketBallTeamBean.Result> result = body.getResult();
+            if (result != null && !result.isEmpty()) {
+                PoXiaoZiJieBasketBallTeamBean.Result result1 = result.get(0);
+                if (result1.getId() == teamId) {
+                    poXiaoBasketBallTeamRepository.save(result1);
+                    return result1;
+                }
+            }
+        }
+        System.out.println("teamId:" + teamId);
+        return null;
+    }
+
+    public PoXiaoZiJieFootBallTeamBean.Result getFootBallTeam(Integer teamId) {
+        Call<PoXiaoZiJieFootBallTeamBean> teams = poXiaoZijieNetInterface.getFootBallTeam(teamId, 1);
+        PoXiaoZiJieFootBallTeamBean body = null;
+
+        try {
+            body = teams.execute().body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (body != null) {
+            List<PoXiaoZiJieFootBallTeamBean.Result> result = body.getResult();
+            if (body.getCode() == 10004) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                }
+                getFootBallTeam(teamId);
+            }
+            if (result != null && !result.isEmpty()) {
+                PoXiaoZiJieFootBallTeamBean.Result result1 = result.get(0);
+                if (result1.getId() == teamId) {
+                    poXiaoFootBallTeamRepository.save(result1);
+                    return result1;
+                }
+            }
+        }
+
+        System.out.println("teamId:" + teamId);
+        return null;
     }
 }

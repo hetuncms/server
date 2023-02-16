@@ -1,19 +1,20 @@
 package com.hetun.datacenter.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hetun.datacenter.Config;
 import com.hetun.datacenter.bean.*;
-import com.hetun.datacenter.net.MainDataInterface;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
-import com.hetun.datacenter.repository.*;
+import com.hetun.datacenter.repository.LiveBeanRepository;
+import com.hetun.datacenter.repository.PoXiaoBasketBallTeamRepository;
+import com.hetun.datacenter.repository.PoXiaoFootBallTeamRepository;
+import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
+import com.hetun.datacenter.tools.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
 import retrofit2.Response;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,27 +30,24 @@ public class DataService {
     private final PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository;
     private final PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository;
     private final PoXiaoLiveInfoRepository poXiaoLiveInfoRepository;
-    private final RateOddsRepository rateOddsRepository;
-    private final MainDataInterface netInterface;
     private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
     private final IndexService indexService;
     private final RateOddsService rateOddsService;
+    private final BallTeamService ballTeamService;
     Config config;
     NetService netService;
-    ExecutorService rateOddsThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
     @Autowired
-    public DataService(LiveBeanRepository liveBeanRepository, RateOddsRepository rateOddsRepository, IndexService indexService, RateOddsService rateOddsService, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
+    public DataService(LiveBeanRepository liveBeanRepository, BallTeamService ballTeamService, IndexService indexService, RateOddsService rateOddsService, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
         this.poXiaoFootBallTeamRepository = poXiaoFootBallTeamRepository;
         this.poXiaoBasketBallTeamRepository = poXiaoBasketBallTeamRepository;
+        this.ballTeamService = ballTeamService;
         this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
         this.indexService = indexService;
         this.liveBeanRepository = liveBeanRepository;
         this.config = config;
         this.netService = netService;
-        this.rateOddsRepository = rateOddsRepository;
         this.rateOddsService = rateOddsService;
-        netInterface = netService.getRetrofit().create(MainDataInterface.class);
         poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
     }
 
@@ -83,17 +81,21 @@ public class DataService {
         liveItem.setLiveType(1);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveStatus(pxzjBean.getStatus());
-        liveItem.setLongTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setMatchStartTime(Long.valueOf(pxzjBean.getMatchStartTime()));
         liveItem.setLiveing(indexService.getLiveing(pxzjBean.getId()));
         liveItem.setHasOdds(pxzjBean.getHasOdds());
+
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO leftTeam = pxzjBean.getTeam().get(0);
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO rightTeam = pxzjBean.getTeam().get(1);
+
         PoXiaoZiJieFootBallTeamBean.Result leftTeamDetail = null;
         PoXiaoZiJieFootBallTeamBean.Result rightTeamDetail = null;
         liveItem.setId(pxzjBean.getId());
         try {
-            leftTeamDetail = poXiaoFootBallTeamRepository.findById(leftTeam.getTeamId()).get();
-            rightTeamDetail = poXiaoFootBallTeamRepository.findById(rightTeam.getTeamId()).get();
+            Optional<PoXiaoZiJieFootBallTeamBean.Result> leftTeamOptional = poXiaoFootBallTeamRepository.findById(leftTeam.getTeamId());
+            leftTeamDetail = leftTeamOptional.orElseGet(() -> ballTeamService.getFootBallTeam(leftTeam.getTeamId()));
+            Optional<PoXiaoZiJieFootBallTeamBean.Result> rightTeamOptional = poXiaoFootBallTeamRepository.findById(rightTeam.getTeamId());
+            rightTeamDetail = rightTeamOptional.orElseGet(() -> ballTeamService.getFootBallTeam(rightTeam.getTeamId()));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -108,10 +110,10 @@ public class DataService {
         return liveItem;
     }
 
-    LiveItem tripartiteLiveBeanToLiveBean(PoXiaoZiJieBasketBallBean.ResultDTO pxzjBean) {
+    LiveItem tripartiteLiveBeanToLiveBean(PoXiaoZiJieBasketBallBean.Result pxzjBean) {
         LiveItem liveItem = new LiveItem();
-        PoXiaoZiJieBasketBallBean.ResultDTO.TeamDTO leftTeam = null;
-        PoXiaoZiJieBasketBallBean.ResultDTO.TeamDTO rightTeam = null;
+        PoXiaoZiJieBasketBallBean.Result.Team leftTeam = null;
+        PoXiaoZiJieBasketBallBean.Result.Team rightTeam = null;
         PoXiaoZiJieBasketBallTeamBean.Result leftTeamDetail = null;
         PoXiaoZiJieBasketBallTeamBean.Result rightTeamDetail = null;
 
@@ -119,6 +121,8 @@ public class DataService {
         leftTeam = pxzjBean.getTeam().get(0);
         rightTeam = pxzjBean.getTeam().get(1);
 
+        liveItem.setMainScore(leftTeam.getScore());
+        liveItem.setVisitingScore(rightTeam.getScore());
         Optional<PoXiaoZiJieBasketBallTeamBean.Result> leftTeamDetailOptional = poXiaoBasketBallTeamRepository.findById(leftTeam.getTeamId());
         if (leftTeamDetailOptional.isPresent()) {
             leftTeamDetail = leftTeamDetailOptional.get();
@@ -140,9 +144,14 @@ public class DataService {
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveId(String.valueOf(leftTeam.getTeamId()) + rightTeam.getTeamId() + pxzjBean.getMatchStartTime());
         liveItem.setLiveStatus(pxzjBean.getStatus());
-        liveItem.setLongTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setMatchStartTime(Long.valueOf(pxzjBean.getMatchStartTime()));
         liveItem.setLiveing(indexService.getLiveing(pxzjBean.getId()));
         liveItem.setHasOdds(pxzjBean.getHasOdds());
+
+        // 比分
+        liveItem.setLeftTeamScore(leftTeam.getScore());
+        liveItem.setRightTeamScore(rightTeam.getScore());
+
         return liveItem;
     }
 
@@ -154,8 +163,6 @@ public class DataService {
             System.out.println("mark Old item:" + count);
         }
 
-//        requestAcbData();
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
         String day3date = simpleDateFormat.format(new Date(System.currentTimeMillis() + (long) 2 * 24 * 60 * 60 * 1000));
@@ -166,7 +173,7 @@ public class DataService {
             start_time_after = (simpleDateFormat.parse(date).getTime() / 1000) - 1;
             start_time_before = simpleDateFormat.parse(day3date).getTime() / 1000;
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+           e.printStackTrace();
         }
 
         requestPoXiaoZiJieFootBall(start_time_after, start_time_before);
@@ -178,6 +185,7 @@ public class DataService {
     private void requestPoXiaoZiJieBasketBall(long start_time_after, long start_time_before) {
         int startId = 0;
 
+        ArrayList<Integer> needUpdateRateIds = new ArrayList<>();
         while (true) {
             PoXiaoZiJieBasketBallBean poXiaoZiJieBasketBallBean;
             Call<PoXiaoZiJieBasketBallBean> basketBallMatch = poXiaoZijieNetInterface.getBasketBallMatch(startId, start_time_after, start_time_before);
@@ -188,59 +196,84 @@ public class DataService {
                 e.printStackTrace();
                 continue;
             }
-
-            for (PoXiaoZiJieBasketBallBean.ResultDTO resultDTO : poXiaoZiJieBasketBallBean.getResult()) {
-                LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
+            if (poXiaoZiJieBasketBallBean.getCode().equals(10004)) {
+                System.out.println("requestPoXiaoZiJieBasketBall:"+"重试");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+            for (PoXiaoZiJieBasketBallBean.Result result : poXiaoZiJieBasketBallBean.getResult()) {
+                LiveItem netItem = tripartiteLiveBeanToLiveBean(result);
 
                 if (netItem != null) {
                     updateItem(netItem);
-//                    indexService.getBasketballRateOdds(netItem.getId());
-
+                    // 只获取当天比赛的指数
+                    if (DateUtils.isToday(netItem.getMatchStartTime())) {
+//                        rateOddsService.saveBasketballRateOdds(netItem.getId());
+                        needUpdateRateIds.add(netItem.getId());
+                    }
                 }
             }
 
             if (poXiaoZiJieBasketBallBean.getResult().size() < 100) {
-                return;
+                break;
             }
 
             startId = poXiaoZiJieBasketBallBean.getResult().get(poXiaoZiJieBasketBallBean.getResult().size() - 1).getId() + 1;
         }
+        executorService.submit(() -> needUpdateRateIds.forEach(rateOddsService::saveBasketballRateOdds));
     }
 
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private void requestPoXiaoZiJieFootBall(long start_time_after, long start_time_before) {
         int startId = 0;
         int timeoutCount = 0;
-
+        ArrayList<Integer> needUpdateRateIds = new ArrayList<>();
         while (true) {
             PoXiaoZiJieFootBallBean poXiaoZiJieFootBallBean = null;
             try {
                 Call<PoXiaoZiJieFootBallBean> footBallMatch = poXiaoZijieNetInterface.getFootBallMatch(startId, start_time_after, start_time_before);
                 poXiaoZiJieFootBallBean = footBallMatch.execute().body();
-            } catch (SocketTimeoutException e) {
-                e.printStackTrace();
-                continue;
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                continue;
             } catch (IOException e) {
                 e.printStackTrace();
                 continue;
             }
+            if (poXiaoZiJieFootBallBean.getCode().equals(10004)) {
+                System.out.println("requestPoXiaoZiJieFootBall:"+"重试");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+
+            if (poXiaoZiJieFootBallBean.getResult() == null) {
+                System.out.println(poXiaoZiJieFootBallBean.getCode()+"==="+poXiaoZiJieFootBallBean.getMessage());
+            }
+
             for (PoXiaoZiJieFootBallBean.ResultDTO resultDTO : poXiaoZiJieFootBallBean.getResult()) {
                 LiveItem netItem = tripartiteLiveBeanToLiveBean(resultDTO);
 
                 if (netItem != null) {
                     updateItem(netItem);
-                    rateOddsService.saveFootballRateOdds(netItem.getId());
+                    if (DateUtils.isToday(netItem.getMatchStartTime())) {
+//                        rateOddsService.saveFootballRateOdds(netItem.getId());
+                        needUpdateRateIds.add(netItem.getId());
+                    }
                 }
             }
 
             if (poXiaoZiJieFootBallBean.getResult().size() < 100) {
-                return;
+                break;
             }
 
             startId = poXiaoZiJieFootBallBean.getResult().get(poXiaoZiJieFootBallBean.getResult().size() - 1).getId() + 1;
         }
+        executorService.submit(() -> needUpdateRateIds.forEach(rateOddsService::saveFootballRateOdds));
     }
 
     public void requestVideoData() {
