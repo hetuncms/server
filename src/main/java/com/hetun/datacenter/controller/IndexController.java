@@ -16,9 +16,9 @@ public class IndexController {
         this.indexService = indexService;
     }
 
-    @PostMapping("index")
-    public LiveBean index(@RequestBody(required = false) String requstbody) {
-        return indexService.getIndex(requstbody);
+    @GetMapping("index")
+    public LiveBean index(@RequestParam("liveType") Integer type,@RequestParam("page") Integer page) {
+        return indexService.getIndex(type,page);
     }
 
     @GetMapping("getPlayInfo")

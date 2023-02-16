@@ -44,7 +44,8 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Integer> {
     @Modifying
     @Query(value = "DELETE FROM live_table WHERE is_old!=false", nativeQuery = true)
     Integer deleteAllByOld();
-    @Query(value = "select * from live_table where floor(extract(epoch from now()))<live_table.match_start_time or is_liveing order by is_top desc,is_liveing desc,match_start_time", nativeQuery = true)
+//    @Query(value = "select * from live_table where floor(extract(epoch from now()))<live_table.match_start_time or is_liveing order by is_top desc,is_liveing desc,match_start_time", nativeQuery = true)
+    @Query(value = "select * from live_table order by is_top desc,is_liveing desc,match_start_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
     LiveItem findByLiveId(String liveid);

@@ -152,11 +152,15 @@ public class RateOddsService {
             RateOddsCompanyBean soccer = execute.body();
             assert soccer != null;
             List<RateOddsCompanyBean.Result> result = soccer.getResult();
-            rateOddsCompanyRepository.saveAll(result);
+            if (result != null && !result.isEmpty()) {
+                rateOddsCompanyRepository.saveAll(result);
+            }
             RateOddsCompanyBean basketBall = PoXiaoRateOddsNetInterface.getRateCompany(102).execute().body();
             assert basketBall != null;
             List<RateOddsCompanyBean.Result> basketBallList = basketBall.getResult();
-            rateOddsCompanyRepository.saveAll(basketBallList);
+            if (basketBallList != null && !basketBallList.isEmpty()) {
+                rateOddsCompanyRepository.saveAll(basketBallList);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

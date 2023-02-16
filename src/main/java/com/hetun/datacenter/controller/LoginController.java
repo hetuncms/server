@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 @RestController
 public class LoginController {
-
     LoginService loginService;
-
     @Autowired
     public LoginController(LoginService loginService) {
         this.loginService = loginService;

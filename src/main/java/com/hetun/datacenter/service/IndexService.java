@@ -67,10 +67,7 @@ public class IndexService {
         return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
     }
 
-    public LiveBean getIndex(String requstbody) {
-        Integer liveType = Integer.valueOf(requstbody.substring(requstbody.indexOf("a=") + 2, requstbody.indexOf("&g=")));
-
-        Integer pager = Integer.valueOf(requstbody.substring(requstbody.indexOf("g=") + 2));
+    public LiveBean getIndex(Integer liveType, Integer pager) {
         PageRequest of = PageRequest.of(pager, 10);
         Page<LiveItem> all;
 
@@ -193,6 +190,4 @@ public class IndexService {
         liveBeanRepository.save(liveItem);
         return new BaseBean.Builder().build();
     }
-
-
 }
