@@ -1,11 +1,13 @@
 package com.hetun.datacenter.controller;
 
-import com.hetun.datacenter.bean.LiveBean;
+import com.hetun.datacenter.bean.BaseBean;
 import com.hetun.datacenter.bean.LiveItem;
 import com.hetun.datacenter.bean.PlayInfoBean;
 import com.hetun.datacenter.service.IndexService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class IndexController {
@@ -17,8 +19,9 @@ public class IndexController {
     }
 
     @GetMapping("index")
-    public LiveBean index(@RequestParam("liveType") Integer type,@RequestParam("page") Integer page) {
-        return indexService.getIndex(type,page);
+    public BaseBean<List<LiveItem>> index(@RequestParam("liveType") Integer type, @RequestParam("page") Integer page,
+                                          @RequestParam(required = false,name = "limit") Integer limit) {
+        return indexService.getIndex(type,page,limit);
     }
 
     @GetMapping("getPlayInfo")

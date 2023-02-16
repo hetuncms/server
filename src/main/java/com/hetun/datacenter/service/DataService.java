@@ -77,7 +77,7 @@ public class DataService {
     LiveItem tripartiteLiveBeanToLiveBean(PoXiaoZiJieFootBallBean.ResultDTO pxzjBean) {
         LiveItem liveItem = new LiveItem();
 
-        liveItem.setIsTop(false);
+        liveItem.setTop(false);
         liveItem.setLiveType(1);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveStatus(pxzjBean.getStatus());
@@ -139,7 +139,7 @@ public class DataService {
             liveItem.setRightName(rightTeamDetail.getName_zh());
         }
         liveItem.setLeagueId(pxzjBean.getLeagueId());
-        liveItem.setIsTop(false);
+        liveItem.setTop(false);
         liveItem.setLiveType(2);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveId(String.valueOf(leftTeam.getTeamId()) + rightTeam.getTeamId() + pxzjBean.getMatchStartTime());

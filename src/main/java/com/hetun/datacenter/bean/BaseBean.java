@@ -25,7 +25,7 @@ public class BaseBean<T> {
         return data;
     }
 
-    private BaseBean() {
+    protected BaseBean() {
     }
 
     public void setData(T data) {

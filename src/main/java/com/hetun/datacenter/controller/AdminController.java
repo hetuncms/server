@@ -24,7 +24,7 @@ public class AdminController {
         return allIndex;
     }
 
-        @CrossOrigin
+    @CrossOrigin
     @PostMapping("/insert_stream")
     public BaseBean<Integer> insertLiveStream(@RequestBody LiveItem liveItem) {
         return indexService.updateLiveItem(liveItem);

@@ -67,8 +67,13 @@ public class IndexService {
         return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
     }
 
-    public LiveBean getIndex(Integer liveType, Integer pager) {
-        PageRequest of = PageRequest.of(pager, 10);
+    public BaseBean<List<LiveItem>> getIndex(Integer liveType, Integer pager, Integer limit) {
+        if (limit == null) {
+            limit = 10;
+        }else if(limit.equals(-1)){
+            limit = Integer.MAX_VALUE;
+        }
+        PageRequest of = PageRequest.of(pager, limit);
         Page<LiveItem> all;
 
         if (liveType == 0) {
@@ -84,9 +89,8 @@ public class IndexService {
         }
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
-
-
-        return liveBean;
+        BaseBean<List<LiveItem>> build = new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
+        return build;
     }
 
     public FootballPlayInfoBean getPlayInfo(Integer matchId) {
@@ -185,8 +189,6 @@ public class IndexService {
     }
 
     public BaseBean<Integer> updateLiveItem(LiveItem liveItem) {
-        LiveItem byLiveId = liveBeanRepository.findByLiveId(liveItem.getLiveId());
-        liveItem.setId(byLiveId.getId());
         liveBeanRepository.save(liveItem);
         return new BaseBean.Builder().build();
     }

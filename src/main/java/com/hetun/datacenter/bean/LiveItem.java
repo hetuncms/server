@@ -2,10 +2,7 @@ package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vladmihalcea.hibernate.type.json.JsonType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
 import java.util.List;
@@ -14,8 +11,8 @@ import java.util.List;
 @Table(name = "live_table")
 @JsonIgnoreProperties(value = {"liveSource", "old", "hot", "upDataTime", "upDataCount", "leagueId"})
 public class LiveItem {
-
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
     private String liveId;
@@ -25,7 +22,8 @@ public class LiveItem {
     private String liveSource;
     private String title;
     private Long matchStartTime;
-    private boolean isTop;
+    @Column(nullable = false)
+    private boolean top;
     private String leftName;
     private String rightName;
     private String leftImg;
@@ -33,8 +31,10 @@ public class LiveItem {
     private String gameName;
     private Long upDataTime;
     private Long upDataCount;
-    private boolean isHot;
-    private boolean isOld;
+    @Column(nullable = false)
+    private boolean hot;
+    @Column(nullable = false)
+    private boolean old;
     private Integer hasOdds;
     @Column(columnDefinition = "text")
     @Type(JsonType.class)
@@ -43,13 +43,14 @@ public class LiveItem {
     @Type(JsonType.class)
     private List<Integer> mainScore;
     @Column(nullable = false)
-    private boolean isLiveing;
+    private boolean liveing;
     @Column(columnDefinition = "text")
     @Type(JsonType.class)
     private List<Integer> leftTeamScore;
     @Column(columnDefinition = "text")
     @Type(JsonType.class)
     private List<Integer> rightTeamScore;
+
 
     public List<Integer> getMainScore() {
         return mainScore;
@@ -68,22 +69,6 @@ public class LiveItem {
     }
 
     public LiveItem() {
-    }
-
-    public boolean isTop() {
-        return isTop;
-    }
-
-    public boolean isHot() {
-        return isHot;
-    }
-
-    public boolean isOld() {
-        return isOld;
-    }
-
-    public boolean isLiveing() {
-        return isLiveing;
     }
 
     public List<Integer> getLeftTeamScore() {
@@ -118,45 +103,30 @@ public class LiveItem {
         this.hasOdds = hasOdds;
     }
 
-    public boolean getTop() {
-        return isTop;
-    }
-
-    public void setTop(boolean top) {
-        isTop = top;
-    }
-
-    public boolean getLiveing() {
-        return isLiveing;
-    }
-
-    public void setLiveing(boolean liveing) {
-        isLiveing = liveing;
-    }
-
-    public boolean getOld() {
-        return isOld;
-    }
-
-    public void setOld(boolean old) {
-        isOld = old;
-    }
-
-    public boolean getHot() {
-        return isHot;
+    public boolean isHot() {
+        return hot;
     }
 
     public void setHot(boolean hot) {
-        isHot = hot;
+        this.hot = hot;
     }
 
-    public Long getUpDataTime() {
-        return upDataTime;
+    public boolean isOld() {
+        return old;
     }
 
-    public void setUpDataTime(Long upDataTime) {
-        this.upDataTime = upDataTime;
+    public void setOld(boolean old) {
+        this.old = old;
     }
+
+    public boolean isLiveing() {
+        return liveing;
+    }
+
+    public void setLiveing(boolean liveing) {
+        this.liveing = liveing;
+    }
+
 
     public Long getUpDataCount() {
         return upDataCount;
@@ -210,17 +180,32 @@ public class LiveItem {
         return matchStartTime;
     }
 
-    public void setMatchStartTime(Long longTime) {
-        this.matchStartTime = longTime;
+    public void setMatchStartTime(Long matchStartTime) {
+        this.matchStartTime = matchStartTime;
     }
 
-    public boolean getIsTop() {
-        return isTop;
+    public Long getUpDataTime() {
+        return upDataTime;
     }
 
+    public void setUpDataTime(Long upDataTime) {
+        this.upDataTime = upDataTime;
+    }
 
-    public void setIsTop(boolean top) {
-        isTop = top;
+    public boolean isTop() {
+        return top;
+    }
+
+    public void setTop(boolean top) {
+        this.top = top;
+    }
+
+    public Boolean getTop() {
+        return top;
+    }
+
+    public void setTop(Boolean top) {
+        this.top = top;
     }
 
     public String getLeftName() {
