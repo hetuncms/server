@@ -1,10 +1,10 @@
 package com.hetun.datacenter.controller;
 
+import com.hetun.datacenter.bean.BaseBean;
 import com.hetun.datacenter.bean.PredictionsBean;
+import com.hetun.datacenter.bean.PredictionsIndexBean;
 import com.hetun.datacenter.service.PredictionsService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,12 +17,25 @@ public class PredictionsController {
     }
 
     @PostMapping("add_predictions")
-    public void addPredictions(PredictionsBean predictionsBean){
+    public void addPredictions(@RequestBody PredictionsBean predictionsBean) {
         predictionsService.addPredictions(predictionsBean);
     }
 
     @GetMapping("get_predictions")
-    public List<PredictionsBean> getPredictions(){
-        return predictionsService.getAll();
+    public BaseBean<PredictionsIndexBean> getPredictions(@RequestParam(name = "pager", required = false) Integer pager,
+                                                         @RequestParam(value = "limit", required = false) Integer limit,
+                                                         @RequestParam(value = "date") String date) {
+        if (limit == null) {
+            limit = 10;
+        }
+        if (pager == null) {
+            pager = 0;
+        }
+        return predictionsService.getAll(pager, limit,date);
+    }
+
+    @GetMapping("del_predictions")
+    public List<PredictionsBean> delPredictions(PredictionsBean predictionsBean) {
+        return predictionsService.delete(predictionsBean);
     }
 }
