@@ -24,4 +24,5 @@ public interface PoXiaoLiveInfoRepository extends JpaRepository<PoXiaoZiJieLiveI
     @Query(value = "DELETE FROM live_info WHERE is_old=true", nativeQuery = true)
     void deleteAllByOld();
 
+
 }

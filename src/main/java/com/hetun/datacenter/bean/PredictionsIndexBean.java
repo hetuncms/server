@@ -12,5 +12,6 @@ import java.util.List;
 @Builder
 public class PredictionsIndexBean {
     private List<Date> allStartTime;
+    private Date currentShowDate;
     List<PredictionsBean> predictionsBeans;
 }

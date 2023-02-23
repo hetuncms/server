@@ -16,34 +16,28 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class NetService {
 
-    Config config;
+    private final Retrofit retrofit;
+
     @Autowired
     public NetService(Config config) {
-        this.config = config;
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(JacksonConverterFactory.create());
-
+        Retrofit.Builder builder = new Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create()).addConverterFactory(JacksonConverterFactory.create());
 
         OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
         okHttpBuilder.connectTimeout(30, TimeUnit.SECONDS);
 
         okHttpBuilder.addInterceptor(new ArgsInfoInterceptor());
         if (config.getUseProxy()) {
-            java.net.Proxy proxy = new Proxy(Proxy.Type.HTTP,  new InetSocketAddress("localhost", 10809));
+            java.net.Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("localhost", 10809));
             okHttpBuilder = okHttpBuilder.proxy(proxy);
         }
 
         OkHttpClient build = okHttpBuilder.build();
 
         builder.client(build);
-        retrofit = builder
-                .baseUrl("https://sports.dawnbyte.com/")
-                .build();
+        retrofit = builder.baseUrl("https://sports.dawnbyte.com/").build();
     }
 
-    Retrofit retrofit;
-    public Retrofit getRetrofit(){
+    public Retrofit getRetrofit() {
         return retrofit;
     }
 }

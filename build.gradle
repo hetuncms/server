@@ -21,7 +21,6 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	compileOnly 'org.projectlombok:lombok'
 	implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'com.auth0:java-jwt:4.2.1'
 	implementation 'org.xerial:sqlite-jdbc'
 	implementation 'com.squareup.retrofit2:retrofit:2.9.0'

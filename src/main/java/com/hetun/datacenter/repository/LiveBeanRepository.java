@@ -16,23 +16,14 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Integer> {
     @Query(value = "select * from live_table  where live_type = :type order by top,match_start_time desc", nativeQuery = true)
     Page<LiveItem> findAllBySport(Pageable pageable,Integer type);
 
-    @Override
-    <S extends LiveItem> S save(S entity);
 
     @Query(value = "select * from live_table  where live_type = :type and (floor(extract(epoch from now()))<live_table.match_start_time or liveing) " +
             "order by top desc,liveing desc,match_start_time", nativeQuery = true)
     Page<LiveItem> findAllBySportUp(Pageable pageable,Integer type);
 
-
-    @Query(value = "select * from live_table  where live_id = :liveId order by top desc,match_start_time", nativeQuery = true)
-    Page<LiveItem> findAll(Pageable pageable);
-
-
     @Query(value = "select * from live_table  where id = :id order by top desc,match_start_time", nativeQuery = true)
     LiveItem findAllById( Long id);
 
-    @Query(value = "select * from live_table  where live_id = :liveId order by top desc,match_start_time", nativeQuery = true)
-    LiveItem findAllByLiveId( String liveId);
 
     @Query(value = "select * from live_table  where id = :matchId", nativeQuery = true)
     LiveItem findByMatchId(Integer matchId);
@@ -44,8 +35,7 @@ public interface LiveBeanRepository extends JpaRepository<LiveItem, Integer> {
     @Modifying
     @Query(value = "DELETE FROM live_table WHERE old!=false", nativeQuery = true)
     Integer deleteAllByOld();
-//    @Query(value = "select * from live_table where floor(extract(epoch from now()))<live_table.match_start_time or liveing order by top desc,liveing desc,match_start_time", nativeQuery = true)
-    @Query(value = "select * from live_table order by top desc,liveing desc,match_start_time", nativeQuery = true)
+    @Query(value = "select * from live_table where floor(extract(epoch from now()))<live_table.match_start_time or liveing order by top desc,liveing desc,match_start_time", nativeQuery = true)
     Page<LiveItem> findAllUp(PageRequest of);
 
     LiveItem findByLiveId(String liveid);

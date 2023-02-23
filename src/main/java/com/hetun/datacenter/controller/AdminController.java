@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 public class AdminController {
-    IndexService indexService;
+    final IndexService indexService;
 
     @Autowired
     public AdminController(IndexService indexService) {
@@ -20,8 +20,7 @@ public class AdminController {
     @CrossOrigin
     @GetMapping("get_all_stream")
     public BaseBean<List<LiveItem>> getAllStream() {
-        BaseBean<List<LiveItem>> allIndex = indexService.getAllIndex();
-        return allIndex;
+        return indexService.getAllIndex();
     }
 
     @CrossOrigin

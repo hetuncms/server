@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 public class PredictionsService {
-    PredictionsRepository predictionsRepository;
+    private final PredictionsRepository predictionsRepository;
 
     public PredictionsService(PredictionsRepository predictionsRepository) {
         this.predictionsRepository = predictionsRepository;
@@ -29,23 +29,34 @@ public class PredictionsService {
 
     public BaseBean<PredictionsIndexBean> getAll(int pager, int  limit, String dateFormat){
         PageRequest of = PageRequest.of(pager, limit, Sort.by("id"));
-        Date parse = null;
+        Date currentShowDate;
         try {
-            parse = new SimpleDateFormat("yyyy-MM-dd").parse(dateFormat);
+            currentShowDate = new SimpleDateFormat("yyyy-MM-dd").parse(dateFormat);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return new BaseBean.Builder().buildFailure("日期格式有误");
         }
-        Page<PredictionsBean> predictionsBeanPage = predictionsRepository.findAllByStartTime(parse,of);
+
+
+        Page<PredictionsBean> predictionsBeanPage = predictionsRepository.findAllByStartTime(currentShowDate,of);
         List<Date> allStartTime = predictionsRepository.findAllStartTime();
         List<PredictionsBean> predictionsBeans = predictionsBeanPage.get().toList();
-        PredictionsIndexBean predictionsIndexBean = PredictionsIndexBean.builder().allStartTime(allStartTime).predictionsBeans(predictionsBeans).build();
-        BaseBean<PredictionsIndexBean> predictionsIndexBeanBaseBean = new BaseListBean.Builder().build(predictionsIndexBean,
+
+
+        if ((allStartTime != null&& !allStartTime.isEmpty()) && predictionsBeanPage.isEmpty()) {
+            Date date = allStartTime.get(allStartTime.size() - 1);
+            predictionsBeanPage = predictionsRepository.findAllByStartTime(date,of);
+            predictionsBeans = predictionsBeanPage.getContent();
+            currentShowDate = date;
+        }
+        PredictionsIndexBean predictionsIndexBean = PredictionsIndexBean.builder()
+                .allStartTime(allStartTime).predictionsBeans(predictionsBeans).currentShowDate(currentShowDate).build();
+        return new BaseListBean.Builder().build(predictionsIndexBean,
                 predictionsBeanPage.getTotalPages());
-        return predictionsIndexBeanBaseBean;
     }
 
-    public List<PredictionsBean> delete(PredictionsBean predictionsBean) {
+    public BaseBean<Object> delete(PredictionsBean predictionsBean) {
         predictionsRepository.delete(predictionsBean);
-        return null;
+        return new BaseBean.Builder().buildSucces();
     }
 }

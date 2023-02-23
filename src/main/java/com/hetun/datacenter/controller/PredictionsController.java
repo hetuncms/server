@@ -6,11 +6,9 @@ import com.hetun.datacenter.bean.PredictionsIndexBean;
 import com.hetun.datacenter.service.PredictionsService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 public class PredictionsController {
-    PredictionsService predictionsService;
+    private final PredictionsService predictionsService;
 
     public PredictionsController(PredictionsService predictionsService) {
         this.predictionsService = predictionsService;
@@ -35,7 +33,7 @@ public class PredictionsController {
     }
 
     @GetMapping("del_predictions")
-    public List<PredictionsBean> delPredictions(PredictionsBean predictionsBean) {
+    public BaseBean<Object> delPredictions(PredictionsBean predictionsBean) {
         return predictionsService.delete(predictionsBean);
     }
 }

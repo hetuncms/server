@@ -1,7 +1,7 @@
 package com.hetun.datacenter.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hetun.datacenter.bean.BaseBean;
 import com.hetun.datacenter.bean.RateOddsBean;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
@@ -26,7 +26,7 @@ public class RateOddsService {
     private final PoXiaoRateOddsNetInterface PoXiaoRateOddsNetInterface;
     private final RateOddsCompanyRepository rateOddsCompanyRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public RateOddsService(RateOddsRepository rateOddsRepository, NetService netService, SimpMessagingTemplate simpMessagingTemplate, RateOddsCompanyRepository rateOddsCompanyRepository) {
         this.rateOddsRepository = rateOddsRepository;
@@ -44,6 +44,7 @@ public class RateOddsService {
         } catch (IOException e) {
            e.printStackTrace();
         }
+        assert body!=null;
         if (body.getResult() != null) {
             rateOddsRepository.saveAll(body.getResult());
         } else if (body.getCode() == 10004) {
@@ -57,15 +58,15 @@ public class RateOddsService {
         }
     }
 
-    public List<RateOddsBean.Result> saveFootballRateOdds(Integer matchId) {
+    public BaseBean saveFootballRateOdds(Integer matchId) {
 
         List<RateOddsBean.Result> resultSql = getRateOdds(matchId);
         if (resultSql != null && !resultSql.isEmpty()) {
-            return resultSql;
+            return new BaseBean.Builder().buildSucces();
         } else {
             requestFootballNetRateOdds(matchId);
         }
-        return null;
+        return new BaseBean.Builder().buildSucces();
     }
 
     private void requestBasketballRateOdds(int matchId) {
@@ -76,6 +77,10 @@ public class RateOddsService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (rateOddsBean == null){
+            System.out.println("RateOddsService.requestBasketballRateOdds npe");
+            return;
+        }
         if (rateOddsBean.getCode() == 10004) {
             System.out.println("saveBasketballRateOdds=" + "重试！！！！！！！！！");
             try {
@@ -83,22 +88,20 @@ public class RateOddsService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            requestBasketballRateOdds( matchId);
-        } else if (rateOddsBean != null && rateOddsBean.getResult() != null) {
-            for (RateOddsBean.Result result : rateOddsBean.getResult()) {
-                rateOddsRepository.save(result);
-            }
+            requestBasketballRateOdds(matchId);
+        } else if (rateOddsBean.getResult() != null) {
+            rateOddsRepository.saveAll(rateOddsBean.getResult());
         }
     }
 
-    public List<RateOddsBean.Result> saveBasketballRateOdds(final Integer matchId) {
+    public BaseBean saveBasketballRateOdds(final Integer matchId) {
         List<RateOddsBean.Result> resultSql = getRateOdds(matchId);
         if (resultSql != null && !resultSql.isEmpty()) {
-            return resultSql;
+            return  new BaseBean.Builder().buildSucces();
         } else {
             requestBasketballRateOdds(matchId);
         }
-        return resultSql;
+        return new BaseBean.Builder().buildFailure("保存篮球指数失败");
     }
 
 
@@ -112,7 +115,6 @@ public class RateOddsService {
                 RateOddsBean.Result result = rateOddsBean.get();
                 for (RateOddsBean.Result.OddsItem oddsItem : result.getList()) {
 
-
                     if (oddsItem.getCompany_id() == wssRateOddsBean.getCompany_id()) {
                         oddsItem.setOption(wssRateOddsBean.getOption());
                         oddsItem.setScore(wssRateOddsBean.getScore());
@@ -123,7 +125,7 @@ public class RateOddsService {
                 rateOddsRepository.save(result);
 
                 final RateOddsBean.Result finalSendResult = result;
-                Optional<RateOddsBean.Result.OddsItem> first = finalSendResult.getList().stream().filter(oddsItem -> oddsItem.getCompany_id() == 1).findFirst();
+                Optional<RateOddsBean.Result.OddsItem> first = result.getList().stream().filter(oddsItem -> oddsItem.getCompany_id() == 1).findFirst();
                 if (first.isEmpty()) {
                     return;
                 }
@@ -132,18 +134,16 @@ public class RateOddsService {
                 ArrayList<RateOddsBean.Result.OddsItem> oddsItemArrays = new ArrayList<>();
                 oddsItemArrays.add(oddsItem1);
                 finalSendResult.setList(oddsItemArrays);
-                simpMessagingTemplate.convertAndSend("/topic/rate_odds", result);
+                // todo
+                simpMessagingTemplate.convertAndSend("/topic/rate_odds", finalSendResult);
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public List<RateOddsBean.Result> getRateOdds(int matchId) {
-        List<RateOddsBean.Result> allByMatchId = rateOddsRepository.findAllByMatchId(matchId);
-        return allByMatchId;
+        return rateOddsRepository.findAllByMatchId(matchId);
     }
 
     public void getRateCompanyInfo() {

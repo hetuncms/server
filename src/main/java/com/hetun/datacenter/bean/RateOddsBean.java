@@ -13,12 +13,6 @@ import org.hibernate.annotations.Type;
 
 import java.util.List;
 
-/**
- * Auto-generated: 2023-02-04 13:15:8
- *
- * @author bejson.com (i@bejson.com)
- * @website http://www.bejson.com/java2pojo/
- */
 public class RateOddsBean extends BaseNetBean{
 
     private int code;

@@ -9,12 +9,6 @@ import jakarta.persistence.Table;
 
 import java.util.List;
 
-/**
- * Auto-generated: 2023-02-09 2:8:21
- *
- * @author bejson.com (i@bejson.com)
- * @website http://www.bejson.com/java2pojo/
- */
 public class RateOddsCompanyBean {
 
     private int code;

@@ -3,12 +3,6 @@
   */
 package com.hetun.datacenter.bean;
 
-/**
- * Auto-generated: 2023-02-05 21:58:39
- *
- * @author bejson.com (i@bejson.com)
- * @website http://www.bejson.com/java2pojo/
- */
 public class WssBean {
 
     private String id;

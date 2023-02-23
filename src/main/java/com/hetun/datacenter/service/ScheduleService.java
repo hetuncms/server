@@ -14,7 +14,7 @@ public class ScheduleService {
     private final BallTeamService ballTeamService;
     private final FootballService footballService;
     private final RateOddsService rateOddsService;
-    DataService dataService;
+    private final DataService dataService;
 
 
     @Value("${app.teamUpdate}")

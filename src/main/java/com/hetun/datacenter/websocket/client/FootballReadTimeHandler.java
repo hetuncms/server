@@ -47,9 +47,9 @@ public class FootballReadTimeHandler extends BaseEndpoint {
                 String payload = wssBean.getPayload();
                 if (wssBean.getType() == 101) {
                     switch (wssBean.getAction_type()) {
-                        case 1:ballTeamService.addTeam(payload);break;
-                        case 2:ballTeamService.updateTeam(payload);break;
-                        case 3:ballTeamService.delTeam(payload);break;
+                        case 1 -> ballTeamService.addTeam(payload);
+                        case 2 -> ballTeamService.updateTeam(payload);
+                        case 3 -> ballTeamService.delTeam(payload);
                     }
                 }
 

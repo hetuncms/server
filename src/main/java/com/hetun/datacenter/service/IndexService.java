@@ -1,6 +1,5 @@
 package com.hetun.datacenter.service;
 
-import com.hetun.datacenter.Config;
 import com.hetun.datacenter.bean.*;
 import com.hetun.datacenter.net.NetInterface;
 import com.hetun.datacenter.net.NetService;
@@ -13,19 +12,11 @@ import com.hetun.datacenter.tripartite.bean.RateOddsCompanyBean;
 import com.hetun.datacenter.tripartite.repository.LeagueRepository;
 import com.hetun.datacenter.tripartite.repository.RateOddsCompanyRepository;
 import okhttp3.MediaType;
-import okhttp3.ResponseBody;
-import okio.BufferedSink;
-import okio.Okio;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,15 +34,13 @@ public class IndexService {
     private final RateOddsService rateOddsService;
     private final LeagueRepository leagueRepository;
     private final RateOddsCompanyRepository rateOddsCompanyRepository;
-    Config config;
-    NetService netService;
     @Autowired
-    ResourceLoader resourceLoader;
-
-    @Autowired
-    public IndexService(Config config, NetService netService, LeagueRepository leagueRepository, RateOddsService rateOddsService, RateOddsCompanyRepository rateOddsCompanyRepository, RateOddsRepository rateOddsRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
-        this.config = config;
-        this.netService = netService;
+    public IndexService(NetService netService,
+                        LeagueRepository leagueRepository,
+                        RateOddsService rateOddsService,
+                        RateOddsCompanyRepository rateOddsCompanyRepository,
+                        RateOddsRepository rateOddsRepository,
+                        PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
         this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
         this.rateOddsRepository = rateOddsRepository;
         this.rateOddsCompanyRepository = rateOddsCompanyRepository;
@@ -89,8 +78,7 @@ public class IndexService {
         }
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
-        BaseBean<List<LiveItem>> build = new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
-        return build;
+        return new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
     }
 
     public FootballPlayInfoBean getPlayInfo(Integer matchId) {
@@ -133,50 +121,6 @@ public class IndexService {
         return new BaseBean.Builder().build(all);
     }
 
-    private String downloadTeamImg(String img) {
-        try {
-            if (img == null) {
-                return null;
-            }
-            String fileName = img.substring(img.lastIndexOf("/") + 1);
-            File staticDir = null;
-
-            try {
-                staticDir = new File(getClass().getResource("/static/" + TEAM_IMG_NAME).toURI());
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-
-            if (staticDir == null) {
-                staticDir = new File(config.getStaticPath() + TEAM_IMG_NAME);
-            }
-
-            File file = new File(staticDir + "/" + fileName);
-
-            ClassPathResource aStatic = new ClassPathResource("/");
-
-            if (!file.exists()) {
-                file.createNewFile();
-                ResponseBody body = netInterface.downloadImg(img).execute().body();
-                if (body == null) {
-                    return "";
-                }
-                BufferedSink bufferedSink = Okio.buffer(Okio.sink(file));
-                bufferedSink.writeAll(body.source());
-                bufferedSink.close();
-            }
-
-            return config.getLocalAddress() + TEAM_IMG_NAME + "/" + fileName;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return img;
-    }
-
-
-    public String getIframeLinkById(String id) {
-        return config.getLocalAddress() + "live/" + id;
-    }
 
 //    public String findCmsLiveById(Integer id) {
 //        QueryWrapper<LocalLiveBean> queryWrapper = new QueryWrapper<LocalLiveBean>().eq("id", id);

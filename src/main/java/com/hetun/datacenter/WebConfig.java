@@ -8,7 +8,7 @@ import org.springframework.web.servlet.support.WebContentGenerator;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Override // org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+    @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**").allowedOriginPatterns("*").
                 allowedMethods(WebContentGenerator.METHOD_GET,

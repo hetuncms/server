@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 @RestController
 public class LoginController {
-    LoginService loginService;
+    private final LoginService loginService;
     @Autowired
     public LoginController(LoginService loginService) {
         this.loginService = loginService;
@@ -23,7 +23,7 @@ public class LoginController {
         if (StringUtils.hasText(token)) {
             return new BaseBean.Builder().build(token);
         }
-        return new BaseBean.Builder().buildError("登录失败");
+        return new BaseBean.Builder().buildFailure("登录失败");
     }
 
     @GetMapping("/info")

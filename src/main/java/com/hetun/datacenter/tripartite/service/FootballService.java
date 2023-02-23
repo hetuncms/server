@@ -15,11 +15,9 @@ import java.util.List;
 public class FootballService {
     private final PoXiaoNetInterface poXiaoNetInterface;
     private final LeagueRepository leagueRepository;
-    NetService netService;
 
     @Autowired
     public FootballService(NetService netService, LeagueRepository leagueRepository) {
-        this.netService = netService;
         this.leagueRepository = leagueRepository;
         poXiaoNetInterface = netService.getRetrofit().create(PoXiaoNetInterface.class);
     }
@@ -47,9 +45,7 @@ public class FootballService {
             if (result == null || result.size() < 100) {
                 break;
             }
-            for (LeagueBean.Result item : result) {
-                leagueRepository.save(item);
-            }
+            leagueRepository.saveAll(result);
 
 
             beginId = result.get(result.size() - 1).getId() + 1;
@@ -65,6 +61,10 @@ public class FootballService {
                 e.printStackTrace();
                 break;
             }
+            if (body == null) {
+                System.out.println("FootballService.requestLeague body is null");
+                return;
+            }
             List<LeagueBean.Result> result = body.getResult();
             if (body.getCode() == 10004) {
                 System.out.println("requestLeague"+body.getMessage());
@@ -78,9 +78,7 @@ public class FootballService {
             if (result == null || result.size() < 100) {
                 break;
             }
-            for (LeagueBean.Result item : result) {
-                leagueRepository.save(item);
-            }
+            leagueRepository.saveAll(result);
             beginId = result.get(result.size() - 1).getId() + 1;
         }
 

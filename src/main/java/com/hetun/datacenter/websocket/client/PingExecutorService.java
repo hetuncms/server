@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class PingExecutorService {
 
-    public static ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(3);
+    public static final ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(3);
 
     public static ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;

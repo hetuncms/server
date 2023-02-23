@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 public class IndexController {
-    IndexService indexService;
+    final IndexService indexService;
 
     @Autowired
     public IndexController(IndexService indexService) {
@@ -31,10 +31,6 @@ public class IndexController {
     @GetMapping("getLiveItem")
     public LiveItem getLiveItem(@RequestParam("liveId") Long liveId){
         return indexService.getLiveItem(liveId);
-    }
-    @PostMapping("getVideoUrl")
-    public String getVideoUrl(String id) {
-        return "aaa";
     }
 
 //    @CrossOrigin
@@ -58,9 +54,4 @@ public class IndexController {
 //    }
 //
 
-    @CrossOrigin
-    @PostMapping("/get_iframe_link_byid")
-    public String getIframeLinkById(@RequestParam("id")String id) {
-        return indexService.getIframeLinkById(id);
-    }
 }

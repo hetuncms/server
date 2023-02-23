@@ -10,13 +10,6 @@ import jakarta.persistence.Table;
 
 import java.util.List;
 
-
-/**
- * Auto-generated: 2023-01-31 12:49:0
- *
- * @author bejson.com (i@bejson.com)
- * @website http://www.bejson.com/java2pojo/
- */
 public class PoXiaoZiJieBasketBallTeamBean {
 
     private int code;

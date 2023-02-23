@@ -40,7 +40,7 @@ public class BallTeamService {
 
     private String getFootTeams() {
         int startId = 0;
-        String msg = "";
+        String msg;
         while (true) {
             Call<PoXiaoZiJieFootBallTeamBean> teams = poXiaoZijieNetInterface.getFootBallTeams(startId);
             PoXiaoZiJieFootBallTeamBean body;
@@ -48,6 +48,9 @@ public class BallTeamService {
                 body = teams.execute().body();
             } catch (IOException e) {
                 e.printStackTrace();
+                continue;
+            }
+            if (body == null) {
                 continue;
             }
             if (body.getCode() == 10004) {
@@ -59,20 +62,18 @@ public class BallTeamService {
                 continue;
             }
 
-            if (body == null || body.getCode() != 0) {
+            if (body.getCode() != 0) {
                 msg = body.getMessage();
                 return msg + "code" + body.getCode() + "===curId:" + startId;
             }
-            for (PoXiaoZiJieFootBallTeamBean.Result resultDTO : body.getResult()) {
-                poXiaoFootBallTeamRepository.save(resultDTO);
-            }
+            poXiaoFootBallTeamRepository.saveAll(body.getResult());
             startId = body.getResult().get(body.getResult().size() - 1).getId() + 1;
         }
     }
 
     private String getBasketBallTeams() {
         int startId = 0;
-        String msg = "";
+        String msg;
         while (true) {
             Call<PoXiaoZiJieBasketBallTeamBean> teams = poXiaoZijieNetInterface.getBasketBallTeams(startId);
             PoXiaoZiJieBasketBallTeamBean body = null;
@@ -105,15 +106,14 @@ public class BallTeamService {
                 continue;
             }
 
-            for (PoXiaoZiJieBasketBallTeamBean.Result resultDTO : body.getResult()) {
-                poXiaoBasketBallTeamRepository.save(resultDTO);
-            }
+            poXiaoBasketBallTeamRepository.saveAll(body.getResult());
 
             startId = body.getResult().get(body.getResult().size() - 1).getId() + 1;
         }
     }
 
     public void addTeam(String payload) {
+        // todo
         System.out.println("BallTeamService.addTeam");
     }
 
@@ -165,7 +165,7 @@ public class BallTeamService {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                  e.printStackTrace();
+                    e.printStackTrace();
                 }
                 getFootBallTeam(teamId);
             }

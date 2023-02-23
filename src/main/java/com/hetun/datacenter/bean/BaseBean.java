@@ -43,11 +43,17 @@ public class BaseBean<T> {
             baseBean.setCode(20000);
             return baseBean;
         }
-        public <T> BaseBean<T>  buildError(String msg){
+        public <T> BaseBean<T> buildFailure(String msg){
             BaseBean<T> baseBean = new BaseBean<>();
             baseBean.setCode(50000);
             baseBean.setMsg(msg);
             return baseBean;
         }
+        public <T> BaseBean<T>  buildSucces(){
+            BaseListBean<T> baseBean = new BaseListBean<>();
+            baseBean.setCode(20000);
+            return baseBean;
+        }
+
     }
 }

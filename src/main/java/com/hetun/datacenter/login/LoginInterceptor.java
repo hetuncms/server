@@ -34,11 +34,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (JWTUtils.verify(token) == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return JWTUtils.verify(token) != null;
     }
 
     /**
@@ -47,8 +43,8 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 可以通过此方法对请求域中的模型和视图做进一步修改
      */
     @Override
-    public void postHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, ModelAndView modelAndView) throws Exception {
-        System.out.println(modelAndView);
+    public void postHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, ModelAndView modelAndView) {
+        System.out.println("LoginInterceptor.postHandle"+modelAndView);
     }
 
     /**
@@ -57,7 +53,8 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 可以通过此方法实现资源清理、记录日志信息等工作
      */
     @Override
-    public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, Exception ex) throws Exception {
-        System.out.println(ex);
+    public void afterCompletion(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, Exception ex) {
+        assert ex != null;
+        ex.printStackTrace();
     }
 }

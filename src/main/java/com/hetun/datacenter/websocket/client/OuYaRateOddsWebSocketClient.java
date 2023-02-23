@@ -28,16 +28,13 @@ public class OuYaRateOddsWebSocketClient extends BaseEndpoint {
                     if (wssBean.getType() == 802) {
                         if (wssBean.getAction_type() == 2) {
                             switch (wssBean.getSport_id()) {
-                                case 101:
-                                    rateOddsService.handlerOuYaFootball(wssBean.getPayload());
-                                    break;
-                                case 102:
-                                    rateOddsService.handlerOuYaBasketball(wssBean.getPayload());
-                                    break;
+                                case 101 -> rateOddsService.handlerOuYaFootball(wssBean.getPayload());
+                                case 102 -> rateOddsService.handlerOuYaBasketball(wssBean.getPayload());
                             }
                         }
                     } else if (wssBean.getType() == 801) {
                         if (wssBean.getAction_type() == 1) {
+                            // todo
 //                            rateOddsService.handlerOuYa(wssBean.getPayload());
                         }
                     }

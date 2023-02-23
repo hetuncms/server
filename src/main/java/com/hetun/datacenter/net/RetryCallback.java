@@ -14,8 +14,8 @@ public abstract class RetryCallback<T extends BaseNetBean> implements Callback<T
 
     private static final String TAG = RetryCallback.class.getSimpleName();
 
-    private int mRetryCount;
-    private long mRetryInterval;
+    private final int mRetryCount;
+    private final long mRetryInterval;
 
     private int mCurrentRetryCount;
 
@@ -23,7 +23,7 @@ public abstract class RetryCallback<T extends BaseNetBean> implements Callback<T
 
     private Call<T> mCall;
 
-    private Timer timer = new Timer();
+    private final Timer timer = new Timer();
 
     public RetryCallback(Call<T> call) {
         isExecuting = true;
@@ -75,5 +75,5 @@ public abstract class RetryCallback<T extends BaseNetBean> implements Callback<T
     public abstract void onRequestFail(Call<T> call, Throwable t);
 
     public void onStartRetry(){
-    };
+    }
 }

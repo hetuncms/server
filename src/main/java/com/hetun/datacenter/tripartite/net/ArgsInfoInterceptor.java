@@ -26,7 +26,7 @@ public class ArgsInfoInterceptor implements Interceptor {
         newRequestBuilder.url(url);
 
 //        RequestBody body = request.body();
-        //为Post表单请求设置公共参数
+//        为Post表单请求设置公共参数
 //        if (body instanceof FormBody) {
 //            FormBody formBody = (FormBody) body;
 //            FormBody.Builder formBodyBuilder = new FormBody.Builder();

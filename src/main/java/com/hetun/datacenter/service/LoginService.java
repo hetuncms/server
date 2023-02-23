@@ -11,7 +11,8 @@ import java.util.List;
 @Service
 public class LoginService {
 
-    LoginRepository loginMapper;
+    private final LoginRepository loginMapper;
+
     @Autowired
     public LoginService(LoginRepository loginMapper) {
         this.loginMapper = loginMapper;

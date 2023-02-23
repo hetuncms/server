@@ -19,7 +19,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,11 +33,17 @@ public class DataService {
     private final IndexService indexService;
     private final RateOddsService rateOddsService;
     private final BallTeamService ballTeamService;
-    Config config;
-    NetService netService;
+    final Config config;
+    final NetService netService;
 
     @Autowired
-    public DataService(LiveBeanRepository liveBeanRepository, BallTeamService ballTeamService, IndexService indexService, RateOddsService rateOddsService, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
+    public DataService(LiveBeanRepository liveBeanRepository,
+                       BallTeamService ballTeamService,
+                       IndexService indexService,
+                       RateOddsService rateOddsService,
+                       PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository,
+                       PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository,
+                       PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
         this.poXiaoFootBallTeamRepository = poXiaoFootBallTeamRepository;
         this.poXiaoBasketBallTeamRepository = poXiaoBasketBallTeamRepository;
         this.ballTeamService = ballTeamService;
@@ -54,7 +59,7 @@ public class DataService {
     private void updateItem(LiveItem item) {
         Optional<LiveItem> byId = liveBeanRepository.findById(item.getId());
 
-        if (!byId.isEmpty()) {
+        if (byId.isPresent()) {
             LiveItem sqlItem = byId.get();
             item.setUpDataCount(sqlItem.getUpDataCount() + 1);
         }
@@ -112,14 +117,12 @@ public class DataService {
 
     LiveItem tripartiteLiveBeanToLiveBean(PoXiaoZiJieBasketBallBean.Result pxzjBean) {
         LiveItem liveItem = new LiveItem();
-        PoXiaoZiJieBasketBallBean.Result.Team leftTeam = null;
-        PoXiaoZiJieBasketBallBean.Result.Team rightTeam = null;
-        PoXiaoZiJieBasketBallTeamBean.Result leftTeamDetail = null;
-        PoXiaoZiJieBasketBallTeamBean.Result rightTeamDetail = null;
+        PoXiaoZiJieBasketBallBean.Result.Team leftTeam = pxzjBean.getTeam().get(0);
+        PoXiaoZiJieBasketBallBean.Result.Team rightTeam = pxzjBean.getTeam().get(1);
+        PoXiaoZiJieBasketBallTeamBean.Result leftTeamDetail;
+        PoXiaoZiJieBasketBallTeamBean.Result rightTeamDetail;
 
         liveItem.setId(pxzjBean.getId());
-        leftTeam = pxzjBean.getTeam().get(0);
-        rightTeam = pxzjBean.getTeam().get(1);
 
         liveItem.setMainScore(leftTeam.getScore());
         liveItem.setVisitingScore(rightTeam.getScore());
@@ -194,6 +197,9 @@ public class DataService {
                 poXiaoZiJieBasketBallBean = basketBallMatch.execute().body();
             } catch (IOException e) {
                 e.printStackTrace();
+                continue;
+            }
+            if (poXiaoZiJieBasketBallBean == null) {
                 continue;
             }
             if (poXiaoZiJieBasketBallBean.getCode().equals(10004)) {
@@ -280,7 +286,6 @@ public class DataService {
 
         poXiaoLiveInfoRepository.setAllItemIsOld();
 
-        List<Integer> LiveingMatchId = new ArrayList<>();
         int startid = 0;
         while (true) {
             Call<PoXiaoZiJieLiveInfoBean> realTimeVideo = poXiaoZijieNetInterface.getRealTimeVideo(1, startid, 100);
@@ -301,7 +306,6 @@ public class DataService {
 
             for (PoXiaoZiJieLiveInfoBean.Result result1 : body.getResult()) {
                 result1.setOld(false);
-                LiveingMatchId.add(result1.getMatch_id());
                 poXiaoLiveInfoRepository.save(result1);
 
                 LiveItem byMatchId = liveBeanRepository.findByMatchId(result1.getMatch_id());
@@ -336,7 +340,6 @@ public class DataService {
 
             for (PoXiaoZiJieLiveInfoBean.Result result1 : body.getResult()) {
                 result1.setOld(false);
-                LiveingMatchId.add(result1.getMatch_id());
                 poXiaoLiveInfoRepository.save(result1);
 
                 LiveItem byMatchId = liveBeanRepository.findByMatchId(result1.getMatch_id());

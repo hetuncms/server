@@ -19,7 +19,7 @@ public class ConfigWebSocket implements ReConnectable {
     private final IndexService indexService;
     private final BallTeamService ballTeamService;
     private final FootballReadTimeHandler footballReadTimeHandler;
-    BasketballService basketballService;
+    final BasketballService basketballService;
     WebSocketContainer container;
     ClientEndpointConfig clientEndpointConfig;
     @Autowired
@@ -50,9 +50,7 @@ public class ConfigWebSocket implements ReConnectable {
             container.connectToServer(ouYaRateOddsWebSocketClient, clientEndpointConfig, URI.create("wss://sports.dawnbyte.com/rate-stream/ws"));
             container.connectToServer(new BasketballStream(basketballService), clientEndpointConfig, URI.create("wss://sports.dawnbyte.com/basketball-stream/ws"));
             container.connectToServer(footballReadTimeHandler, clientEndpointConfig, URI.create("wss://sports.dawnbyte.com/soccer-stream/ws"));
-        } catch (DeploymentException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (DeploymentException | IOException e) {
             e.printStackTrace();
         }
     }
