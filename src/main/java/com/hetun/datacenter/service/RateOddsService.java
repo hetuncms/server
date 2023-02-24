@@ -6,9 +6,11 @@ import com.hetun.datacenter.bean.RateOddsBean;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.RateOddsRepository;
+import com.hetun.datacenter.tripartite.bean.BaseNetBean;
 import com.hetun.datacenter.tripartite.bean.RateOddsCompanyBean;
 import com.hetun.datacenter.tripartite.net.PoXiaoRateOddsNetInterface;
 import com.hetun.datacenter.tripartite.repository.RateOddsCompanyRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
@@ -18,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @Service
 public class RateOddsService {
     private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
@@ -37,8 +39,8 @@ public class RateOddsService {
     }
 
     private void requestFootballNetRateOdds(int matchId) {
-        Call<RateOddsBean> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(101, matchId);
-        RateOddsBean body = null;
+        Call<BaseNetBean<RateOddsBean.Result>> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(101, matchId);
+        BaseNetBean<RateOddsBean.Result> body = null;
         try {
             body = oddsDetails.execute().body();
         } catch (IOException e) {
@@ -48,7 +50,7 @@ public class RateOddsService {
         if (body.getResult() != null) {
             rateOddsRepository.saveAll(body.getResult());
         } else if (body.getCode() == 10004) {
-            System.out.println("requestNetRateOdds:" + body.getMessage());
+            log.info("requestFootballNetRateOdds: body:"+body.getMessage());
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -70,19 +72,19 @@ public class RateOddsService {
     }
 
     private void requestBasketballRateOdds(int matchId) {
-        Call<RateOddsBean> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(102, matchId);
-        RateOddsBean rateOddsBean = null;
+        Call<BaseNetBean<RateOddsBean.Result>> oddsDetails = poXiaoZijieNetInterface.getOddsDetails(102, matchId);
+        BaseNetBean<RateOddsBean.Result> rateOddsBean = null;
         try {
             rateOddsBean = oddsDetails.execute().body();
         } catch (IOException e) {
             e.printStackTrace();
         }
         if (rateOddsBean == null){
-            System.out.println("RateOddsService.requestBasketballRateOdds npe");
+            log.info("RateOddsService.requestBasketballRateOdds npe");
             return;
         }
         if (rateOddsBean.getCode() == 10004) {
-            System.out.println("saveBasketballRateOdds=" + "重试！！！！！！！！！");
+            log.info("requestBasketballRateOdds: 重试");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {

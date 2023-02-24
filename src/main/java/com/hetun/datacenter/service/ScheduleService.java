@@ -1,6 +1,7 @@
 package com.hetun.datacenter.service;
 
 import com.hetun.datacenter.tripartite.service.FootballService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -8,7 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
-
+@Slf4j
 @Service
 public class ScheduleService {
     private final BallTeamService ballTeamService;
@@ -31,7 +32,7 @@ public class ScheduleService {
     @Async
     @Scheduled(fixedRate = 5,timeUnit = TimeUnit.MINUTES)
     public void schedule() {
-        System.out.println("update====match");
+        log.info("schedule: ");
         dataService.requestData();
     }
     @Async

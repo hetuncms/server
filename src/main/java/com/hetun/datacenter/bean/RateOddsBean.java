@@ -13,28 +13,10 @@ import org.hibernate.annotations.Type;
 
 import java.util.List;
 
-public class RateOddsBean extends BaseNetBean{
+public class RateOddsBean extends BaseNetBean<RateOddsBean.Result>{
 
-    private int code;
-    private String message;
     private long time_stamp;
-    private List<Result> result;
 
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public long getTime_stamp() {
         return time_stamp;
@@ -42,14 +24,6 @@ public class RateOddsBean extends BaseNetBean{
 
     public void setTime_stamp(long time_stamp) {
         this.time_stamp = time_stamp;
-    }
-
-    public List<Result> getResult() {
-        return result;
-    }
-
-    public void setResult(List<Result> result) {
-        this.result = result;
     }
 
     @Entity

@@ -1,6 +1,7 @@
 package com.hetun.datacenter.net;
 
 import com.hetun.datacenter.bean.*;
+import com.hetun.datacenter.tripartite.bean.BaseNetBean;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -32,7 +33,7 @@ public interface PoXiaoZijieNetInterface {
     Call<PoXiaoZiJieLiveInfoBean> getRealTimeBasketballVideo(@Query("is_streaming") Integer is_streaming, @Query("begin_id") Integer begin_id, @Query("limit") int limit);
 
     @GET("/rate/api/odds/details")
-    Call<RateOddsBean> getOddsDetails(@Query("sport_id") Integer sportId, @Query("match_id") Integer matchId);
+    Call<BaseNetBean<RateOddsBean.Result>> getOddsDetails(@Query("sport_id") Integer sportId, @Query("match_id") Integer matchId);
 
     @GET("/soccer/api/team")
     Call<PoXiaoZiJieFootBallTeamBean> getFootBallTeam(@Query("begin_id") Integer beginId,@Query("limit") int limit);

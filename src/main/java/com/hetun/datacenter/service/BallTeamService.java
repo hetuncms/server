@@ -6,13 +6,14 @@ import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.PoXiaoBasketBallTeamRepository;
 import com.hetun.datacenter.repository.PoXiaoFootBallTeamRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
 
 import java.io.IOException;
 import java.util.List;
-
+@Slf4j
 @Service
 public class BallTeamService {
 
@@ -31,10 +32,9 @@ public class BallTeamService {
     }
 
     public void getTeams() {
-        String msg = getFootTeams();
-        System.out.println(msg);
+        String footTeams = getFootTeams();
         String basketBallTeamsMsg = getBasketBallTeams();
-        System.out.println(basketBallTeamsMsg);
+        log.info("getTeams() called");
     }
 
 
@@ -85,7 +85,9 @@ public class BallTeamService {
             }
 
             if (body.getCode() == 10004) {
-                System.out.println("请求限制，5秒后自动重新请求");
+                log.info("getBasketBallTeams: "+"请求限制，5秒后自动重新请求");
+
+
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -114,15 +116,15 @@ public class BallTeamService {
 
     public void addTeam(String payload) {
         // todo
-        System.out.println("BallTeamService.addTeam");
+        log.info("addTeam() called with: payload = [" + payload + "]");
     }
 
     public void updateTeam(String payload) {
-        System.out.println("BallTeamService.updateTeam");
+        log.info("updateTeam() called with: payload = [" + payload + "]");
     }
 
     public void delTeam(String payload) {
-        System.out.println("BallTeamService.delTeam");
+        log.info("delTeam() called with: payload = [" + payload + "]");
     }
 
     public PoXiaoZiJieBasketBallTeamBean.Result getBasketBallTeam(Integer teamId) {
@@ -145,7 +147,7 @@ public class BallTeamService {
                 }
             }
         }
-        System.out.println("teamId:" + teamId);
+        log.info("getBasketBallTeam: teamid:"+teamId);
         return null;
     }
 
@@ -177,8 +179,7 @@ public class BallTeamService {
                 }
             }
         }
-
-        System.out.println("teamId:" + teamId);
+        log.info("getFootBallTeam: "+teamId);
         return null;
     }
 }

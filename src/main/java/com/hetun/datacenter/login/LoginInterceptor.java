@@ -3,13 +3,14 @@ package com.hetun.datacenter.login;
 import com.hetun.datacenter.tools.JWTUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
+@Slf4j
 @Component
 public class LoginInterceptor implements HandlerInterceptor {
     /**
@@ -20,7 +21,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
         String token = request.getHeader("token");
-        System.out.println(token);
+        log.info("preHandle() called with: request = [" + request + "], response = [" + response + "], handler = [" + handler + "]");
 
 
         if (handler instanceof HandlerMethod handlerMethod) {
@@ -44,7 +45,7 @@ public class LoginInterceptor implements HandlerInterceptor {
      */
     @Override
     public void postHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, ModelAndView modelAndView) {
-        System.out.println("LoginInterceptor.postHandle"+modelAndView);
+        log.info("postHandle() called with: request = [" + request + "], response = [" + response + "], handler = [" + handler + "], modelAndView = [" + modelAndView + "]");
     }
 
     /**

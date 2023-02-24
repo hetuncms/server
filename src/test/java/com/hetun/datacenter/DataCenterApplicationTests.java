@@ -11,11 +11,9 @@ class DataCenterApplicationTests {
 
 	@Test
 	void contextLoads() {
-		System.out.println("");
 	}
 	@Test
 	void test() {
-		System.out.println("");
 	}
 
 }

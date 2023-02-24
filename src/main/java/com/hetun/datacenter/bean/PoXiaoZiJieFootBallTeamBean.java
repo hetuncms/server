@@ -48,7 +48,8 @@ public class PoXiaoZiJieFootBallTeamBean {
     public void setTime_stamp(int time_stamp) {
         this.time_stamp = time_stamp;
     }
-@JsonIgnoreProperties(ignoreUnknown = true)
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @Entity
     @Table(name = "football_team")
     public static class Result {

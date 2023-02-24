@@ -9,6 +9,7 @@ import com.hetun.datacenter.repository.PoXiaoBasketBallTeamRepository;
 import com.hetun.datacenter.repository.PoXiaoFootBallTeamRepository;
 import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
 import com.hetun.datacenter.tools.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
@@ -23,8 +24,11 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 @Service
 public class DataService {
+    final Config config;
+    final NetService netService;
     private final LiveBeanRepository liveBeanRepository;
     private final PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository;
     private final PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository;
@@ -33,17 +37,10 @@ public class DataService {
     private final IndexService indexService;
     private final RateOddsService rateOddsService;
     private final BallTeamService ballTeamService;
-    final Config config;
-    final NetService netService;
+    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Autowired
-    public DataService(LiveBeanRepository liveBeanRepository,
-                       BallTeamService ballTeamService,
-                       IndexService indexService,
-                       RateOddsService rateOddsService,
-                       PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository,
-                       PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository,
-                       PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
+    public DataService(LiveBeanRepository liveBeanRepository, BallTeamService ballTeamService, IndexService indexService, RateOddsService rateOddsService, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
         this.poXiaoFootBallTeamRepository = poXiaoFootBallTeamRepository;
         this.poXiaoBasketBallTeamRepository = poXiaoBasketBallTeamRepository;
         this.ballTeamService = ballTeamService;
@@ -93,8 +90,8 @@ public class DataService {
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO leftTeam = pxzjBean.getTeam().get(0);
         PoXiaoZiJieFootBallBean.ResultDTO.TeamDTO rightTeam = pxzjBean.getTeam().get(1);
 
-        PoXiaoZiJieFootBallTeamBean.Result leftTeamDetail = null;
-        PoXiaoZiJieFootBallTeamBean.Result rightTeamDetail = null;
+        PoXiaoZiJieFootBallTeamBean.Result leftTeamDetail;
+        PoXiaoZiJieFootBallTeamBean.Result rightTeamDetail;
         liveItem.setId(pxzjBean.getId());
         try {
             Optional<PoXiaoZiJieFootBallTeamBean.Result> leftTeamOptional = poXiaoFootBallTeamRepository.findById(leftTeam.getTeamId());
@@ -158,12 +155,12 @@ public class DataService {
         return liveItem;
     }
 
-
     public void requestData() {
-        System.out.println("liveBeanRepository.findAll().size():" + liveBeanRepository.findAll().size());
+        log.info("requestData: " + "liveBeanRepository.findAll().size():" + liveBeanRepository.findAll().size());
         if (liveBeanRepository.findAll().size() != 0) {
             Integer count = liveBeanRepository.setAllItemIsOld();
-            System.out.println("mark Old item:" + count);
+            log.info("mark Old item:" + count);
+            log.info("requestData: " + "mark Old item:" + count);
         }
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -176,13 +173,14 @@ public class DataService {
             start_time_after = (simpleDateFormat.parse(date).getTime() / 1000) - 1;
             start_time_before = simpleDateFormat.parse(day3date).getTime() / 1000;
         } catch (ParseException e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
 
         requestPoXiaoZiJieFootBall(start_time_after, start_time_before);
         requestPoXiaoZiJieBasketBall(start_time_after, start_time_before);
         Integer count = deleteOldItem();
-        System.out.println("delete old item: " + count);
+        log.info("delete old item: " + count);
+        log.info("requestData: delete old item: " + count);
     }
 
     private void requestPoXiaoZiJieBasketBall(long start_time_after, long start_time_before) {
@@ -203,7 +201,7 @@ public class DataService {
                 continue;
             }
             if (poXiaoZiJieBasketBallBean.getCode().equals(10004)) {
-                System.out.println("requestPoXiaoZiJieBasketBall:"+"重试");
+                log.info("requestPoXiaoZiJieBasketBall:" + "重试");
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -233,13 +231,11 @@ public class DataService {
         executorService.submit(() -> needUpdateRateIds.forEach(rateOddsService::saveBasketballRateOdds));
     }
 
-    ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private void requestPoXiaoZiJieFootBall(long start_time_after, long start_time_before) {
         int startId = 0;
-        int timeoutCount = 0;
         ArrayList<Integer> needUpdateRateIds = new ArrayList<>();
         while (true) {
-            PoXiaoZiJieFootBallBean poXiaoZiJieFootBallBean = null;
+            PoXiaoZiJieFootBallBean poXiaoZiJieFootBallBean;
             try {
                 Call<PoXiaoZiJieFootBallBean> footBallMatch = poXiaoZijieNetInterface.getFootBallMatch(startId, start_time_after, start_time_before);
                 poXiaoZiJieFootBallBean = footBallMatch.execute().body();
@@ -247,8 +243,9 @@ public class DataService {
                 e.printStackTrace();
                 continue;
             }
+            assert poXiaoZiJieFootBallBean != null;
             if (poXiaoZiJieFootBallBean.getCode().equals(10004)) {
-                System.out.println("requestPoXiaoZiJieFootBall:"+"重试");
+                log.info("requestPoXiaoZiJieFootBall:" + "重试");
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -258,7 +255,8 @@ public class DataService {
             }
 
             if (poXiaoZiJieFootBallBean.getResult() == null) {
-                System.out.println(poXiaoZiJieFootBallBean.getCode()+"==="+poXiaoZiJieFootBallBean.getMessage());
+                log.info(poXiaoZiJieFootBallBean.getCode() + "===" + poXiaoZiJieFootBallBean.getMessage());
+                log.info("requestPoXiaoZiJieFootBall: " + poXiaoZiJieFootBallBean.getCode() + "===" + poXiaoZiJieFootBallBean.getMessage());
             }
 
             for (PoXiaoZiJieFootBallBean.ResultDTO resultDTO : poXiaoZiJieFootBallBean.getResult()) {
