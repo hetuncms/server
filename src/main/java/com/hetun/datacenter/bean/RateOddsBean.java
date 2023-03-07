@@ -28,7 +28,7 @@ public class RateOddsBean extends BaseNetBean<RateOddsBean.Result>{
 
     @Entity
     @Table(name = "rate_odds")
-    public static class Result {
+    public static class Result implements BaseNetBean.GetIdabble{
         @Id
         private int id;
         private int sport_id;

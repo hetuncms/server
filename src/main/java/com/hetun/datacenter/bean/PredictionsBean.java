@@ -18,20 +18,18 @@ public class PredictionsBean {
     private Long id;
     @Column(nullable = false)
     private String leagueName;
-    @Column(nullable = false)
-    private String changci;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "timestamp(0)")
     private Date startTime;
     @Column(nullable = false)
     private String boDan;
     @Column(nullable = false)
     private String duYing;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String bigBall;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String smallBall;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer goal;
     @Column(nullable = false)
     private String  bet;

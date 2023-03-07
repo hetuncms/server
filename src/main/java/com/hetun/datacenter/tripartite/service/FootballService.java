@@ -33,7 +33,7 @@ public class FootballService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            List<LeagueBean.Result> result = body.getResult();
+            List<LeagueBean.LeagueResult> result = body.getResult();
             if (body.getCode() == 10004) {
                 log.info("requestLeague: "+body.getMessage());
                 try {
@@ -66,7 +66,7 @@ public class FootballService {
                 log.info("requestLeague: FootballService.requestLeague body is null");
                 return;
             }
-            List<LeagueBean.Result> result = body.getResult();
+            List<LeagueBean.LeagueResult> result = body.getResult();
             if (body.getCode() == 10004) {
                 log.info("requestLeague: "+body.getMessage());
                 try {

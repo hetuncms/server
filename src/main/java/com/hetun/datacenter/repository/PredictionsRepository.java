@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface PredictionsRepository extends JpaRepository<PredictionsBean, Integer> {
-    @Query(value = "select u from PredictionsBean u where cast(u.startTime as DATE) = :select_date")
+    @Query(value = "select u from PredictionsBean u where cast(u.startTime as DATE) = :select_date order by u.startTime")
     Page<PredictionsBean> findAllByStartTime(Date select_date, Pageable pageable);
 
     @Query(value = "select distinct cast(start_time as DATE) from predictions order by start_time",nativeQuery = true)

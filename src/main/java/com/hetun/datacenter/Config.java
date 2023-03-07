@@ -8,7 +8,6 @@ public class Config {
     @Value("${local_address}")
     private String localAddress;
 
-
     @Value("${spring.web.resources.static-locations}")
     private String staticPath;
 

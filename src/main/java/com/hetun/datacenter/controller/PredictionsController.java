@@ -24,7 +24,8 @@ public class PredictionsController {
                                                          @RequestParam(value = "limit", required = false) Integer limit,
                                                          @RequestParam(value = "date") String date) {
         if (limit == null) {
-            limit = 10;
+            // 关闭分页
+            limit = Integer.MAX_VALUE;
         }
         if (pager == null) {
             pager = 0;

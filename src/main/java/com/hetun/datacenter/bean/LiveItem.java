@@ -1,14 +1,29 @@
 package com.hetun.datacenter.bean;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hetun.datacenter.tripartite.bean.LeagueBean;
 import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.Type;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "live_table")
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @JsonIgnoreProperties(value = {"liveSource", "old", "hot", "upDataTime", "upDataCount", "leagueId"})
 public class LiveItem {
     @Id
@@ -18,10 +33,12 @@ public class LiveItem {
     private String liveId;
     private Integer liveType;
     private Integer liveStatus;
-    private Integer leagueId;
+//    private Integer leagueId;
     private String liveSource;
     private String title;
-    private Long matchStartTime;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date matchStartTime;
     @Column(nullable = false)
     private boolean top;
     private String leftName;
@@ -50,209 +67,22 @@ public class LiveItem {
     @Column(columnDefinition = "text")
     @Type(JsonType.class)
     private List<Integer> rightTeamScore;
+    @OneToOne(targetEntity = LeagueBean.LeagueResult.class)
+    @JoinColumn(name = "league_id",referencedColumnName = "id",
+                foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @NotFound(action= NotFoundAction.IGNORE)
+    private LeagueBean.LeagueResult leagueResult;
 
-
-    public List<Integer> getMainScore() {
-        return mainScore;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        LiveItem liveItem = (LiveItem) o;
+        return id != null && Objects.equals(id, liveItem.id);
     }
 
-    public void setMainScore(List<Integer> mainScore) {
-        this.mainScore = mainScore;
-    }
-
-    public List<Integer> getVisitingScore() {
-        return visitingScore;
-    }
-
-    public void setVisitingScore(List<Integer> visitingScore) {
-        this.visitingScore = visitingScore;
-    }
-
-    public LiveItem() {
-    }
-
-    public List<Integer> getLeftTeamScore() {
-        return leftTeamScore;
-    }
-
-    public void setLeftTeamScore(List<Integer> leftTeamScore) {
-        this.leftTeamScore = leftTeamScore;
-    }
-
-    public List<Integer> getRightTeamScore() {
-        return rightTeamScore;
-    }
-
-    public void setRightTeamScore(List<Integer> rightTeamScore) {
-        this.rightTeamScore = rightTeamScore;
-    }
-
-    public Integer getLeagueId() {
-        return leagueId;
-    }
-
-    public void setLeagueId(Integer leagueId) {
-        this.leagueId = leagueId;
-    }
-
-    public Integer getHasOdds() {
-        return hasOdds;
-    }
-
-    public void setHasOdds(Integer hasOdds) {
-        this.hasOdds = hasOdds;
-    }
-
-    public boolean isHot() {
-        return hot;
-    }
-
-    public void setHot(boolean hot) {
-        this.hot = hot;
-    }
-
-    public boolean isOld() {
-        return old;
-    }
-
-    public void setOld(boolean old) {
-        this.old = old;
-    }
-
-    public boolean isLiveing() {
-        return liveing;
-    }
-
-    public void setLiveing(boolean liveing) {
-        this.liveing = liveing;
-    }
-
-
-    public Long getUpDataCount() {
-        return upDataCount;
-    }
-
-    public void setUpDataCount(Long upDataCount) {
-        this.upDataCount = upDataCount;
-    }
-
-    public String getLiveSource() {
-        return liveSource;
-    }
-
-    public void setLiveSource(String liveSource) {
-        this.liveSource = liveSource;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getLiveType() {
-        return liveType;
-    }
-
-    public void setLiveType(Integer liveType) {
-        this.liveType = liveType;
-    }
-
-    public Integer getLiveStatus() {
-        return liveStatus;
-    }
-
-    public void setLiveStatus(Integer liveStatus) {
-        this.liveStatus = liveStatus;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Long getMatchStartTime() {
-        return matchStartTime;
-    }
-
-    public void setMatchStartTime(Long matchStartTime) {
-        this.matchStartTime = matchStartTime;
-    }
-
-    public Long getUpDataTime() {
-        return upDataTime;
-    }
-
-    public void setUpDataTime(Long upDataTime) {
-        this.upDataTime = upDataTime;
-    }
-
-    public boolean isTop() {
-        return top;
-    }
-
-    public void setTop(boolean top) {
-        this.top = top;
-    }
-
-    public Boolean getTop() {
-        return top;
-    }
-
-    public void setTop(Boolean top) {
-        this.top = top;
-    }
-
-    public String getLeftName() {
-        return leftName;
-    }
-
-    public void setLeftName(String leftName) {
-        this.leftName = leftName;
-    }
-
-    public String getRightName() {
-        return rightName;
-    }
-
-    public void setRightName(String rightName) {
-        this.rightName = rightName;
-    }
-
-    public String getLiveId() {
-        return liveId;
-    }
-
-    public void setLiveId(String liveId) {
-        this.liveId = liveId;
-    }
-
-    public String getLeftImg() {
-        return leftImg;
-    }
-
-    public void setLeftImg(String leftImg) {
-        this.leftImg = leftImg;
-    }
-
-    public String getRightImg() {
-        return rightImg;
-    }
-
-    public void setRightImg(String rightImg) {
-        this.rightImg = rightImg;
-    }
-
-    public String getGameName() {
-        return gameName;
-    }
-
-    public void setGameName(String gameName) {
-        this.gameName = gameName;
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

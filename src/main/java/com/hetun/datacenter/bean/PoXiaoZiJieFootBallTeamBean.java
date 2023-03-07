@@ -1,6 +1,7 @@
 package com.hetun.datacenter.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hetun.datacenter.tripartite.bean.BaseNetBean;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -52,7 +53,7 @@ public class PoXiaoZiJieFootBallTeamBean {
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Entity
     @Table(name = "football_team")
-    public static class Result {
+    public static class Result implements BaseNetBean.GetIdabble {
         @Id
         private int id;
 

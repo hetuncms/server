@@ -4,11 +4,9 @@ import com.hetun.datacenter.Config;
 import com.hetun.datacenter.bean.*;
 import com.hetun.datacenter.net.NetService;
 import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
-import com.hetun.datacenter.repository.LiveBeanRepository;
-import com.hetun.datacenter.repository.PoXiaoBasketBallTeamRepository;
-import com.hetun.datacenter.repository.PoXiaoFootBallTeamRepository;
-import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
+import com.hetun.datacenter.repository.*;
 import com.hetun.datacenter.tools.DateUtils;
+import com.hetun.datacenter.tripartite.bean.LeagueBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,10 +35,19 @@ public class DataService {
     private final IndexService indexService;
     private final RateOddsService rateOddsService;
     private final BallTeamService ballTeamService;
+    private final PoXiaoLeagueRepository poXiaoLeagueRepository;
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Autowired
-    public DataService(LiveBeanRepository liveBeanRepository, BallTeamService ballTeamService, IndexService indexService, RateOddsService rateOddsService, PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository, PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository, PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, Config config, NetService netService) {
+    public DataService(LiveBeanRepository liveBeanRepository,
+                       BallTeamService ballTeamService,
+                       IndexService indexService,
+                       RateOddsService rateOddsService,
+                       PoXiaoFootBallTeamRepository poXiaoFootBallTeamRepository,
+                       PoXiaoBasketBallTeamRepository poXiaoBasketBallTeamRepository,
+                       PoXiaoLiveInfoRepository poXiaoLiveInfoRepository,
+                       Config config, NetService netService,
+                        PoXiaoLeagueRepository PoXiaoLeagueRepository) {
         this.poXiaoFootBallTeamRepository = poXiaoFootBallTeamRepository;
         this.poXiaoBasketBallTeamRepository = poXiaoBasketBallTeamRepository;
         this.ballTeamService = ballTeamService;
@@ -50,6 +57,7 @@ public class DataService {
         this.config = config;
         this.netService = netService;
         this.rateOddsService = rateOddsService;
+        poXiaoLeagueRepository = PoXiaoLeagueRepository;
         poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
     }
 
@@ -83,7 +91,7 @@ public class DataService {
         liveItem.setLiveType(1);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveStatus(pxzjBean.getStatus());
-        liveItem.setMatchStartTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setMatchStartTime(new Date(pxzjBean.getMatchStartTime()));
         liveItem.setLiveing(indexService.getLiveing(pxzjBean.getId()));
         liveItem.setHasOdds(pxzjBean.getHasOdds());
 
@@ -103,7 +111,10 @@ public class DataService {
             return null;
         }
 
-        liveItem.setLeagueId(pxzjBean.getLeagueId());
+//        liveItem.setLeagueId(pxzjBean.getLeagueId());
+
+        Optional<LeagueBean.LeagueResult> byId = poXiaoLeagueRepository.findById(pxzjBean.getId());
+        liveItem.setLeagueResult(byId.get());
         liveItem.setLeftImg(leftTeamDetail.getPic());
         liveItem.setRightImg(rightTeamDetail.getPic());
         liveItem.setLeftName(leftTeamDetail.getName_zh());
@@ -138,13 +149,15 @@ public class DataService {
             liveItem.setRightImg(rightTeamDetail.getPic());
             liveItem.setRightName(rightTeamDetail.getName_zh());
         }
-        liveItem.setLeagueId(pxzjBean.getLeagueId());
+//        liveItem.setLeagueId(pxzjBean.getLeagueId());
+        Optional<LeagueBean.LeagueResult> byId = poXiaoLeagueRepository.findById(pxzjBean.getId());
+        liveItem.setLeagueResult(byId.get());
         liveItem.setTop(false);
         liveItem.setLiveType(2);
         liveItem.setLiveSource("poxiaozijie");
         liveItem.setLiveId(String.valueOf(leftTeam.getTeamId()) + rightTeam.getTeamId() + pxzjBean.getMatchStartTime());
         liveItem.setLiveStatus(pxzjBean.getStatus());
-        liveItem.setMatchStartTime(Long.valueOf(pxzjBean.getMatchStartTime()));
+        liveItem.setMatchStartTime(new Date(pxzjBean.getMatchStartTime()));
         liveItem.setLiveing(indexService.getLiveing(pxzjBean.getId()));
         liveItem.setHasOdds(pxzjBean.getHasOdds());
 
@@ -215,7 +228,7 @@ public class DataService {
                 if (netItem != null) {
                     updateItem(netItem);
                     // 只获取当天比赛的指数
-                    if (DateUtils.isToday(netItem.getMatchStartTime())) {
+                    if (DateUtils.isToday(netItem.getMatchStartTime().getTime())) {
 //                        rateOddsService.saveBasketballRateOdds(netItem.getId());
                         needUpdateRateIds.add(netItem.getId());
                     }
@@ -264,7 +277,7 @@ public class DataService {
 
                 if (netItem != null) {
                     updateItem(netItem);
-                    if (DateUtils.isToday(netItem.getMatchStartTime())) {
+                    if (DateUtils.isToday(netItem.getMatchStartTime().getTime())) {
 //                        rateOddsService.saveFootballRateOdds(netItem.getId());
                         needUpdateRateIds.add(netItem.getId());
                     }

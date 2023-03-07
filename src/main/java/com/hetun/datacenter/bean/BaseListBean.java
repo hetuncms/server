@@ -12,11 +12,18 @@ public class BaseListBean<T> extends BaseBean<T> {
     }
     public static class Builder{
 
-        public <T> BaseBean<T>  build(T data,int totalPages){
+        public <T> BaseListBean<T> build(T data,int totalPages){
             BaseListBean<T> baseBean = new BaseListBean<>();
             baseBean.setCode(20000);
             baseBean.setData(data);
             baseBean.setTotalPages(totalPages);
+            return baseBean;
+        }
+
+        public <T> BaseBean<T>  build(T data){
+            BaseListBean<T> baseBean = new BaseListBean<>();
+            baseBean.setCode(20000);
+            baseBean.setData(data);
             return baseBean;
         }
     }

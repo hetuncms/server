@@ -1,13 +1,9 @@
 package com.hetun.datacenter.service;
 
 import com.hetun.datacenter.bean.*;
-import com.hetun.datacenter.net.NetInterface;
-import com.hetun.datacenter.net.NetService;
-import com.hetun.datacenter.net.PoXiaoZijieNetInterface;
 import com.hetun.datacenter.repository.LiveBeanRepository;
 import com.hetun.datacenter.repository.PoXiaoLiveInfoRepository;
 import com.hetun.datacenter.repository.RateOddsRepository;
-import com.hetun.datacenter.tripartite.bean.LeagueBean;
 import com.hetun.datacenter.tripartite.bean.RateOddsCompanyBean;
 import com.hetun.datacenter.tripartite.repository.LeagueRepository;
 import com.hetun.datacenter.tripartite.repository.RateOddsCompanyRepository;
@@ -16,7 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,47 +28,70 @@ public class IndexService {
     private static final String TEAM_IMG_NAME = "team_img";
     private final LiveBeanRepository liveBeanRepository;
     private final PoXiaoLiveInfoRepository poXiaoLiveInfoRepository;
-    private final PoXiaoZijieNetInterface poXiaoZijieNetInterface;
-    private final NetInterface netInterface;
     private final RateOddsRepository rateOddsRepository;
     private final RateOddsService rateOddsService;
     private final LeagueRepository leagueRepository;
     private final RateOddsCompanyRepository rateOddsCompanyRepository;
+
     @Autowired
-    public IndexService(NetService netService,
-                        LeagueRepository leagueRepository,
-                        RateOddsService rateOddsService,
-                        RateOddsCompanyRepository rateOddsCompanyRepository,
-                        RateOddsRepository rateOddsRepository,
-                        PoXiaoLiveInfoRepository poXiaoLiveInfoRepository, LiveBeanRepository liveBeanRepository) {
+    public IndexService(
+            LeagueRepository leagueRepository,
+            RateOddsService rateOddsService,
+            RateOddsCompanyRepository rateOddsCompanyRepository,
+            RateOddsRepository rateOddsRepository,
+            PoXiaoLiveInfoRepository poXiaoLiveInfoRepository,
+            LiveBeanRepository liveBeanRepository) {
         this.poXiaoLiveInfoRepository = poXiaoLiveInfoRepository;
         this.rateOddsRepository = rateOddsRepository;
         this.rateOddsCompanyRepository = rateOddsCompanyRepository;
         this.liveBeanRepository = liveBeanRepository;
         this.leagueRepository = leagueRepository;
         this.rateOddsService = rateOddsService;
-        netInterface = netService.getRetrofit().create(NetInterface.class);
-        this.poXiaoZijieNetInterface = netService.getRetrofit().create(PoXiaoZijieNetInterface.class);
+
     }
 
     boolean getLiveing(Integer matchId) {
         // 更新直播状态
         return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
     }
+    
+    public List<Date> getAllDate(Integer type){
+        if (type.equals(0)) {
+            return liveBeanRepository.getAllDate();
+        }else{
+            return liveBeanRepository.getAllDate(type);
+        }
+    }
 
-    public BaseBean<List<LiveItem>> getIndex(Integer liveType, Integer pager, Integer limit) {
+    public BaseListBean<List<LiveItem>> getIndex(Integer liveType,String date, Integer pager, Integer limit) {
         if (limit == null) {
             limit = 10;
-        }else if(limit.equals(-1)){
+        }else if(limit.equals(-1)) {
             limit = Integer.MAX_VALUE;
         }
         PageRequest of = PageRequest.of(pager, limit);
         Page<LiveItem> all;
-
+        Date currentShowDate = null;
+        if (StringUtils.hasText(date)) {
+            try {
+                currentShowDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
         if (liveType == 0) {
-            all = liveBeanRepository.findAllUp(of);
+            if (currentShowDate != null) {
+                all = liveBeanRepository.findAllUp(of,currentShowDate);
+            }else{
+                all = liveBeanRepository.findAllUp(of);
+            }
         } else {
-            all = liveBeanRepository.findAllBySportUp(of, liveType);
+            if (currentShowDate != null) {
+                all = liveBeanRepository.findAllBySportByDatePager(of,currentShowDate, liveType);
+            }else{
+                all = liveBeanRepository.findAllBySportPager(of,liveType);
+            }
         }
 
         List<LiveItem> content = all.getContent();
@@ -76,10 +99,13 @@ public class IndexService {
         for (LiveItem liveItem : content) {
             liveItem.setLiveing(getLiveing(liveItem.getId()));
         }
+
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
-        return new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
+        BaseListBean<List<LiveItem>> build = new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
+        return build;
     }
+
 
     public FootballPlayInfoBean getPlayInfo(Integer matchId) {
         FootballPlayInfoBean playInfoBean = new FootballPlayInfoBean();
@@ -87,11 +113,11 @@ public class IndexService {
 
         LiveItem liveItem = liveBeanRepository.findByMatchId(matchId);
 
-        Optional<LeagueBean.Result> leagueOp = leagueRepository.findById(liveItem.getLeagueId());
-        if (leagueOp.isPresent()) {
-            LeagueBean.Result league = leagueOp.get();
-            playInfoBean.setFootballLeague(league);
-        }
+//        Optional<LeagueBean.LeagueResult> leagueOp = leagueRepository.findById(liveItem.getLeagueId());
+//        if (leagueOp.isPresent()) {
+//            LeagueBean.LeagueResult league = leagueOp.get();
+//            playInfoBean.setFootballLeague(league);
+//        }
 
         List<RateOddsBean.Result> rateOdds = rateOddsService.getRateOdds(matchId);
 
@@ -136,4 +162,5 @@ public class IndexService {
         liveBeanRepository.save(liveItem);
         return new BaseBean.Builder().build();
     }
+
 }

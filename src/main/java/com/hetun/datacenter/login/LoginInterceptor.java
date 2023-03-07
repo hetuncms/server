@@ -23,13 +23,13 @@ public class LoginInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         log.info("preHandle() called with: request = [" + request + "], response = [" + response + "], handler = [" + handler + "]");
 
-
         if (handler instanceof HandlerMethod handlerMethod) {
             JwtIgnore jwtIgnore = handlerMethod.getMethodAnnotation(JwtIgnore.class);
             if (jwtIgnore != null) {
                 return true;
             }
         }
+
         if (HttpMethod.OPTIONS.name().equals(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return true;
@@ -44,8 +44,11 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 可以通过此方法对请求域中的模型和视图做进一步修改
      */
     @Override
-    public void postHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler, ModelAndView modelAndView) {
-        log.info("postHandle() called with: request = [" + request + "], response = [" + response + "], handler = [" + handler + "], modelAndView = [" + modelAndView + "]");
+    public void postHandle(@NotNull HttpServletRequest request,
+                           @NotNull HttpServletResponse response,
+                           @NotNull Object handler, ModelAndView modelAndView) {
+        log.info("postHandle() called with: request = [" + request + "], response = [" +
+                response + "], handler = [" + handler + "], modelAndView = [" + modelAndView + "]");
     }
 
     /**
