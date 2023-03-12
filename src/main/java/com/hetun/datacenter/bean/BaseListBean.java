@@ -19,7 +19,13 @@ public class BaseListBean<T> extends BaseBean<T> {
             baseBean.setTotalPages(totalPages);
             return baseBean;
         }
-
+        public <T> BaseListBean<T> buildEmptyError(int totalPages){
+            BaseListBean<T> baseBean = new BaseListBean<>();
+            baseBean.setCode(50001);
+            baseBean.setMsg("没有更多数据");
+            baseBean.setTotalPages(totalPages);
+            return baseBean;
+        }
         public <T> BaseBean<T>  build(T data){
             BaseListBean<T> baseBean = new BaseListBean<>();
             baseBean.setCode(20000);

@@ -42,7 +42,8 @@ public class IndexController {
             data = indexService.getIndex(type, new SimpleDateFormat("yyyy-MM-dd").format(allDate.get(0)), page, limit).getData();
         }
         baseListDateBean.setData(data);
-        baseListDateBean.setCode(20000);
+        baseListDateBean.setMsg(index.getMsg());
+        baseListDateBean.setCode(index.getCode());
         baseListDateBean.setTotalPages(totalPages);
         return baseListDateBean;
     }

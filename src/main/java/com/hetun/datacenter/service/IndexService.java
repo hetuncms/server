@@ -54,7 +54,7 @@ public class IndexService {
         // 更新直播状态
         return poXiaoLiveInfoRepository.findByMatchId(matchId) != null;
     }
-    
+
     public List<Date> getAllDate(Integer type){
         if (type.equals(0)) {
             return liveBeanRepository.getAllDate();
@@ -93,7 +93,10 @@ public class IndexService {
                 all = liveBeanRepository.findAllBySportPager(of,liveType);
             }
         }
-
+        int totalPages = all.getTotalPages();
+        if (pager > totalPages) {
+            return new BaseListBean.Builder().buildEmptyError(totalPages);
+        }
         List<LiveItem> content = all.getContent();
 
         for (LiveItem liveItem : content) {
@@ -102,10 +105,9 @@ public class IndexService {
 
         LiveBean liveBean = new LiveBean();
         liveBean.setLive_item(content);
-        BaseListBean<List<LiveItem>> build = new BaseListBean.Builder().build(liveBean.getLive_item(), all.getTotalPages());
+        BaseListBean<List<LiveItem>> build = new BaseListBean.Builder().build(liveBean.getLive_item(), totalPages);
         return build;
     }
-
 
     public FootballPlayInfoBean getPlayInfo(Integer matchId) {
         FootballPlayInfoBean playInfoBean = new FootballPlayInfoBean();
